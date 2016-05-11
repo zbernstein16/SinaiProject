@@ -29,6 +29,8 @@ class InsightsBuilder {
         // Cancel any in-progress operations.
         updateOperationQueue.cancelAllOperations()
         
+    
+        
         // Get the dates the current and previous weeks.
         let queryDateRange = calculateQueryDateRange()
         

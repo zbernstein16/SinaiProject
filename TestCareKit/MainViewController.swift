@@ -21,13 +21,25 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     var insightsViewController: OCKInsightsViewController!
     var docViewController: DocViewController!
     var chartViewController:DashboardTableViewController!
-
-    
     var surveyVC: ORKTaskViewController!
+    
+    var client:MSClient?
+    var activityResultsTable:MSTable?
+    
+    
     //MARK: Initialize
     
     required init?(coder aDecoder:NSCoder)
     {
+        //SETUP AZURE CONNECTION
+        client = MSClient(
+            applicationURLString:"https://testcarekit.azurewebsites.net"
+        )
+        activityResultsTable = client!.tableWithName("ActivityResults")
+
+        
+        //SETUP CAREKIT AND RESEARCHKIT
+
         sampleData = SampleData(carePlanStore: storeManager.store)
         
         super.init(coder: aDecoder)
@@ -59,7 +71,9 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     //MARK: Default View Methods
     
     override func viewDidLoad() {
+       
         super.viewDidLoad()
+
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -238,7 +252,25 @@ extension MainViewController: ORKTaskViewControllerDelegate
     
     private func completeEvent(event: OCKCarePlanEvent, inStore store: OCKCarePlanStore, withResult result: OCKCarePlanEventResult) {
         store.updateEvent(event, withResult: result, state: .Completed) { success, _, error in
+            print("EVENT RESULT: " + result.valueString)
+    
             
+            
+            
+            //EVERY TIME EVENT IS UPDATED, UPLOAD IT TO AZUR
+            let dateString = "\(event.date.month)/\(event.date.day)"
+            let eventName = event.activity.identifier + "+" + dateString + "+" + String(event.occurrenceIndexOfDay)
+            let item = ["eventName":eventName]
+            self.activityResultsTable!.insert(item) {
+                (insertedItem, errorOrNil) in
+                if let error = errorOrNil {
+                    print("HELP")
+                    print("Error" + error.description);
+                } else {
+                    //let insertedItem = insertedItem as! Dictionary<String,String>
+                    print("Item inserted, id: " + (insertedItem!["id"]! as! String))
+                }
+            }
             if !success {
                 print(error?.localizedDescription)
             }
