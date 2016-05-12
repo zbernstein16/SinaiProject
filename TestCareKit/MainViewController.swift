@@ -270,15 +270,12 @@ extension MainViewController: ORKTaskViewControllerDelegate
                                                     
                                                                         let oldItem = items.first!
                                                                    
-                                                                       dispatch_async(self.serialQueue)
-                                                                       {
-                                                                            dispatch_suspend(self.serialQueue)
+                                                    
                                                                                                 switch event.activity.type
                                                                                                 {
                                                                                                         case OCKCarePlanActivityType.Intervention:
                                                                                                             print("Delete")
                                                                                                                 self.activityResultsTable!.delete(oldItem, completion: { (result, error) -> Void in
-                                                                                                                    dispatch_resume(self.serialQueue)
                                                                                                                     dispatch_resume(self.bigQue)
                                                                                                                     if let err = error {
                                                                                                                     print("ERROR ", err)
@@ -295,7 +292,7 @@ extension MainViewController: ORKTaskViewControllerDelegate
                                                                                                             newItem["valueString"] = valueString
                                                                                                         
                                                                                                                         self.activityResultsTable!.update(newItem as [NSObject: AnyObject], completion: { (result, error) -> Void in
-                                                                                                                            dispatch_resume(self.serialQueue)
+                                                                                                                        
                                                                                                                             dispatch_resume(self.bigQue)
                                                                                                                             if let err = error {
                                                                                                                                 print("ERROR ", err)
@@ -311,20 +308,20 @@ extension MainViewController: ORKTaskViewControllerDelegate
 
                                                                                                 }
                                                                         
-                                                                        }
+                                                    
                                                     
                                                 } else {
                                                     
                                                     
                                                             //IF NO PREVIOUS ITEM FOUND, CREATE NEW ONE, ADD IT TO END OF SERIAL QUE
-                                                            dispatch_async(self.serialQueue) {
-                                                                    dispatch_suspend(self.serialQueue)
+                                                    
+                                                    
                                                                         if valueString != "Not-Completed"
                                                                         {
                                                                              self.insertNewItem(eventName, date: dateString, valueString:valueString, index: index)
                                                                         }
                                                                 
-                                                            }
+                                                            
                                                     
                                                     
                                             }
@@ -335,54 +332,6 @@ extension MainViewController: ORKTaskViewControllerDelegate
        
         
         }
-        
-       
-        
-            
-        
-
-        
-        
-        
-        
-        
-        
-        
-        //////////////
-        
-//        let operation = NSBlockOperation(block:{
-//            self.activityResultsTable!.readWithPredicate(predicate) { (result, error) in
-//                if let err = error {
-//                    print("ERROR ", err)
-//                } else if let items = result?.items where items.count > 0 {
-//                    needsNewItem = false
-//                    print("TRYING TO UPDATE ITEM")
-//                    let oldItem = items.first!
-//                    //UPDATE OLD ITEM
-//                    var newItem = oldItem as! [NSString : AnyObject]
-//                    newItem["valueString"] = valueString
-//
-//                        self.activityResultsTable!.update(newItem as [NSObject: AnyObject], completion: { (result, error) -> Void in
-//                            if let err = error {
-//                                print("ERROR ", err)
-//                            } else if let _ = result {
-//                                //print("New value:" + newItem["valueString"])
-//                            }
-//                        })
-//                    
-//                    
-//                } else {
-//                    //IF NO PREVIOUS ITEM FOUND, CREATE NEW ONE, ADD IT TO END OF SERIAL QUE
-//                    
-//                        self.insertNewItem(eventName, date: dateString, valueString:valueString, index: index)
-//                    
-//                }
-//                
-//            }
-//        })
-//        self.queue.addOperation(operation)
-//        
-
     }
     
     
@@ -392,7 +341,7 @@ extension MainViewController: ORKTaskViewControllerDelegate
         let item = ["eventName":eventName,"date":date,"valueString":valueString,"index":index]
         self.activityResultsTable!.insert(item as! [NSString : AnyObject]) {
             (insertedItem, errorOrNil) in
-            dispatch_resume(self.serialQueue)
+         
             dispatch_resume(self.bigQue)
              print("A")
             if let error = errorOrNil {
