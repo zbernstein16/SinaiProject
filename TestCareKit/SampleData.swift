@@ -16,8 +16,8 @@ class SampleData: NSObject {
     //MARK: Properties
     
         //Array of activities used in app
-    
-        let activities:[Activity] = [BackPain(),TakeMedication(),NameSurvey(),ChoiceSurvey(),Tower()]
+
+    let activities:[Activity] = [BackPain(),TakeMedication(withName:"Ibuprofen"),NameSurvey(),ChoiceSurvey(),Tower(),TakeMedication(withName:"Aleve")]
     
         //Array of Contacts to display 
     

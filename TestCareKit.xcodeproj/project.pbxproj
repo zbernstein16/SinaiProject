@@ -37,6 +37,7 @@
 		CEFF46441CE307B300C7CCEB /* ResearchKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEFF46321CE3077700C7CCEB /* ResearchKit.framework */; };
 		CEFF46451CE307B300C7CCEB /* ResearchKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CEFF46321CE3077700C7CCEB /* ResearchKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		CEFF46491CE308C000C7CCEB /* QueryActivityEventsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF46481CE308C000C7CCEB /* QueryActivityEventsOperation.swift */; };
+		CEFF464F1CE42D5F00C7CCEB /* AppLabLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = CEFF464E1CE42D5F00C7CCEB /* AppLabLogo.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,6 +132,7 @@
 		CEFF462B1CE3077600C7CCEB /* ResearchKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ResearchKit.xcodeproj; path = "../../../Downloads/ResearchKit-master 3/ResearchKit.xcodeproj"; sourceTree = "<group>"; };
 		CEFF46351CE3078800C7CCEB /* CareKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CareKit.xcodeproj; path = "../../../Downloads/CareKit-master/CareKit.xcodeproj"; sourceTree = "<group>"; };
 		CEFF46481CE308C000C7CCEB /* QueryActivityEventsOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QueryActivityEventsOperation.swift; sourceTree = "<group>"; };
+		CEFF464E1CE42D5F00C7CCEB /* AppLabLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppLabLogo.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +183,7 @@
 				A2D9CBE51943CB520017F096 /* frameworks */,
 				A2D9CBE81943D1340017F096 /* TestCareKit-Bridging-Header.h */,
 				A31A89F61BF3FDFA00C7B656 /* Launch Screen.storyboard */,
+				CEFF464E1CE42D5F00C7CCEB /* AppLabLogo.png */,
 			);
 			path = TestCareKit;
 			sourceTree = "<group>";
@@ -372,6 +375,7 @@
 			files = (
 				A2D9CBCC1943C2540017F096 /* Main.storyboard in Resources */,
 				A2D9CBCE1943C2540017F096 /* Images.xcassets in Resources */,
+				CEFF464F1CE42D5F00C7CCEB /* AppLabLogo.png in Resources */,
 				A31A89F71BF3FDFA00C7B656 /* Launch Screen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

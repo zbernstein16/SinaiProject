@@ -14,7 +14,6 @@ class DocViewController: UIViewController {
     
     var webView:UIWebView?
     init() {
-        print("initialize webview")
         super.init(nibName:nil, bundle:nil)
         webView = UIWebView(frame: CGRectMake(0, 0, self.view.bounds.width, self.view.bounds.height))
         self.view.addSubview(webView!)
@@ -71,7 +70,7 @@ class DocViewController: UIViewController {
                 
                 //reading
                 do {
-                    if let test = self.webView {
+                    if let _ = self.webView {
                         let html = try NSString(contentsOfURL: path, encoding: NSUTF8StringEncoding)
                         self.webView!.loadHTMLString(html as String, baseURL: nil)
                        

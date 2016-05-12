@@ -12,8 +12,11 @@ class TakeMedication: Activity {
 
     
     let activityType: ActivityType = .TakeMedication
-    
-    
+    var drugName: String!
+    init(withName name:String)
+    {
+        self.drugName = name
+    }
     func carePlanActivity() -> OCKCarePlanActivity {
         
         let startDate = NSDateComponents(year: 2016, month: 01, day: 01)
@@ -21,7 +24,7 @@ class TakeMedication: Activity {
         
 
         
-        return OCKCarePlanActivity.interventionWithIdentifier(activityType.rawValue, groupIdentifier: "", title: "Ibuprofen", text: nil, tintColor: UIColor.redColor(), instructions: "Take three times a day", imageURL: nil, schedule: schedule, userInfo: nil)
+        return OCKCarePlanActivity.interventionWithIdentifier(activityType.rawValue, groupIdentifier: "", title: drugName, text: nil, tintColor: UIColor.redColor(), instructions: "Take three times a day", imageURL: nil, schedule: schedule, userInfo: nil)
         
         
 
