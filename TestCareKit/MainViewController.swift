@@ -137,17 +137,74 @@ extension MainViewController: CarePlanStoreManagerDelegate {
         insightsViewController.items = insights
     }
 }
+
+//MARK: UPLOAD ACTIVITIES TO DATABASE
 extension MainViewController:OCKCareCardViewControllerDelegate
 {
     func careCardViewController(viewController: OCKCareCardViewController, didSelectButtonWithInterventionEvent interventionEvent: OCKCarePlanEvent) {
         
         
-        //TODO: Update this to database
-        //If circle is filled, the value printed will be 1.
-        //If circle is emptied, this will return a 2.
-        self.checkValueOfEvent(interventionEvent)
+        //This prints initial value. If initial value is 0 or 1, this means the event was just completed.
+        //0:Initial 1:Not completed -> Completed
+        //2 -> Just unfilled
+        let eventName = interventionEvent.activity.identifier + interventionEvent.activity.title
+        let components = interventionEvent.date // local date time: Jun 27, 2014, 9:32 AM
+        let dateString = String(components.month) + "/" + String(components.day) + "/" + String(components.year)
+        let index = interventionEvent.occurrenceIndexOfDay
+        var eventResult:String!
+        switch interventionEvent.state.rawValue {
+        case 0 | 1:
+            eventResult = "Completed"
+        default:
+            eventResult = "Not-Completed"
+        }
+        // Create a predicate that finds if pre-existing item for this specific events exists
+        let datePredicate = NSPredicate(format:"date == '\(dateString)'")
+        let eventNamePredicate = NSPredicate(format:"eventName == '\(eventName)'")
+        let indexPredicate = NSPredicate(format: "index == \(index)")
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [datePredicate,eventNamePredicate,indexPredicate])
+        
+        
+        let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
+        dispatch_async(dispatch_get_global_queue(priority, 0)) {
+            // Query the ActivityEvents Table
+            self.activityResultsTable!.readWithPredicate(predicate) { (result, error) in
+                if let err = error {
+                    print("ERROR ", err)
+                } else if let items = result?.items where items.count > 0 {
+                    //IF PREVIOUS ACTIVITY FOUND, DELETE IT. ONLY LEAVE COMPLETED ACTIVITIES IN DATABASE
+                    print("TRYING TO UPDATE ITEM")
+                    let oldItem = items.first!
+                    self.activityResultsTable!.delete(oldItem as [NSObject: AnyObject], completion: { (result, error) -> Void in
+                        if let err = error {
+                            print("ERROR ", err)
+                        } else if let item = result {
+                            //print("New value:" + newItem["valueString"])
+                        }
+                    })
+                    
+                } else {
+                    //IF NO PREVIOUS ITEM FOUND, CREATE NEW ONE
+                    print("TRYING TO INSERT ITEM")
+                    let item = ["eventName":eventName,"date":dateString,"valueString":eventResult,"index":index]
+                    self.activityResultsTable!.insert(item as! [NSString : AnyObject]) {
+                        (insertedItem, errorOrNil) in
+                        if let error = errorOrNil {
+                            print("Error" + error.description);
+                        } else {
+                            //let insertedItem = insertedItem as! Dictionary<String,String>
+                            print("Item inserted, id: " + (insertedItem!["id"]! as! String))
+                        }
+                    }
+                
+            }
+        }
+        
     }
     
+    
+    }
+
 }
 extension MainViewController: OCKSymptomTrackerViewControllerDelegate
 {
@@ -191,61 +248,6 @@ extension MainViewController: ORKTaskViewControllerDelegate
         // Build an `OCKCarePlanEventResult` that can be saved into the `OCKCarePlanStore`.
         let carePlanResult = sampleAssessment.buildResultForCarePlanEvent(event, taskResult: taskViewController.result)
         self.completeEvent(event, inStore: self.storeManager.store, withResult: carePlanResult)
-        
-//        //TODO: Implement Healthkit compatability
-        
-//        // Check assessment can be associated with a HealthKit sample.
-//        if let healthSampleBuilder = sampleAssessment as? HealthSampleBuilder {
-//            // Build the sample to save in the HealthKit store.
-//            let sample = healthSampleBuilder.buildSampleWithTaskResult(taskViewController.result)
-//            let sampleTypes: Set<HKSampleType> = [sample.sampleType]
-//            
-//            // Requst authorization to store the HealthKit sample.
-//            let healthStore = HKHealthStore()
-//            healthStore.requestAuthorizationToShareTypes(sampleTypes, readTypes: sampleTypes, completion: { success, _ in
-//                // Check if authorization was granted.
-//                if !success {
-//                    /*
-//                     Fall back to saving the simple `OCKCarePlanEventResult`
-//                     in the `OCKCarePlanStore`.
-//                     */
-//                    self.completeEvent(event, inStore: self.storeManager.store, withResult: carePlanResult)
-//                    return
-//                }
-//                
-//                // Save the HealthKit sample in the HealthKit store.
-//                healthStore.saveObject(sample, withCompletion: { success, _ in
-//                    if success {
-//                        /*
-//                         The sample was saved to the HealthKit store. Use it
-//                         to create an `OCKCarePlanEventResult` and save that
-//                         to the `OCKCarePlanStore`.
-//                         */
-//                        let healthKitAssociatedResult = OCKCarePlanEventResult(
-//                            quantitySample: sample,
-//                            quantityStringFormatter: nil,
-//                            displayUnit: healthSampleBuilder.unit,
-//                            displayUnitStringKey: healthSampleBuilder.localizedUnitForSample(sample),
-//                            userInfo: nil
-//                        )
-//                        
-//                        self.completeEvent(event, inStore: self.storeManager.store, withResult: healthKitAssociatedResult)
-//                    }
-//                    else {
-//                        /*
-//                         Fall back to saving the simple `OCKCarePlanEventResult`
-//                         in the `OCKCarePlanStore`.
-//                         */
-//                        self.completeEvent(event, inStore: self.storeManager.store, withResult: carePlanResult)
-//                    }
-//                    
-//                })
-//            })
-//        }
-//        else {
-//            // Update the event with the result.
-//            completeEvent(event, inStore: storeManager.store, withResult: carePlanResult)
-//        }
     }
     
     // MARK: Convenience
@@ -256,24 +258,62 @@ extension MainViewController: ORKTaskViewControllerDelegate
     
             
             
+           
+            let eventName = event.activity.identifier
+            let components = event.date // local date time: Jun 27, 2014, 9:32 AM
+            let dateString = String(components.month) + "/" + String(components.day) + "/" + String(components.year)
+            let index = event.occurrenceIndexOfDay
+            let eventResult = result
             
-            //EVERY TIME EVENT IS UPDATED, UPLOAD IT TO AZUR
-            let dateString = "\(event.date.month)/\(event.date.day)"
-            let eventName = event.activity.identifier + "+" + dateString + "+" + String(event.occurrenceIndexOfDay)
-            let item = ["eventName":eventName]
-            self.activityResultsTable!.insert(item) {
-                (insertedItem, errorOrNil) in
-                if let error = errorOrNil {
-                    print("HELP")
-                    print("Error" + error.description);
-                } else {
-                    //let insertedItem = insertedItem as! Dictionary<String,String>
-                    print("Item inserted, id: " + (insertedItem!["id"]! as! String))
-                }
+             // Create a predicate that finds if pre-existing item for this specific events exists
+            let datePredicate = NSPredicate(format:"date == '\(dateString)'")
+            let eventNamePredicate = NSPredicate(format:"eventName == '\(eventName)'")
+            let indexPredicate = NSPredicate(format: "index == \(index)")
+            let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [datePredicate,eventNamePredicate,indexPredicate])
+
+            
+            let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
+            dispatch_async(dispatch_get_global_queue(priority, 0)) {
+                            // Query the ActivityEvents Table
+                            self.activityResultsTable!.readWithPredicate(predicate) { (result, error) in
+                                if let err = error {
+                                    print("ERROR ", err)
+                                } else if let items = result?.items where items.count > 0 {
+                                    print("TRYING TO UPDATE ITEM")
+                                    let oldItem = items.first!
+                                    //UPDATE OLD ITEM
+                                    var newItem = oldItem as! [NSString : AnyObject]
+                                    newItem["valueString"] = eventResult.valueString
+                                    self.activityResultsTable!.update(newItem as [NSObject: AnyObject], completion: { (result, error) -> Void in
+                                        if let err = error {
+                                            print("ERROR ", err)
+                                        } else if let item = result {
+                                            //print("New value:" + newItem["valueString"])
+                                        }
+                                    })
+                                    
+                                } else {
+                                    //IF NO PREVIOUS ITEM FOUND, CREATE NEW ONE
+                                    print("TRYING TO INSERT ITEM")
+                                    let item = ["eventName":eventName,"date":dateString,"valueString":eventResult.valueString,"index":index]
+                                    self.activityResultsTable!.insert(item as! [NSString : AnyObject]) {
+                                        (insertedItem, errorOrNil) in
+                                        if let error = errorOrNil {
+                                            print("Error" + error.description);
+                                        } else {
+                                            //let insertedItem = insertedItem as! Dictionary<String,String>
+                                            print("Item inserted, id: " + (insertedItem!["id"]! as! String))
+                                        }
+                                    }
+                                    if !success {
+                                        print(error?.localizedDescription)
+                                    }
+                                }
+                                
+                            }
+                        }
+
             }
-            if !success {
-                print(error?.localizedDescription)
-            }
-        }
+            
     }
 }

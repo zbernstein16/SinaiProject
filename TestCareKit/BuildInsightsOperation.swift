@@ -51,7 +51,6 @@ class BuildInsightsOperation: NSOperation {
     // MARK: NSOperation
     
     override func main() {
-        print("UPDATE INSIGHTS")
         // Do nothing if the operation has been cancelled.
         guard !cancelled else { return }
         
@@ -80,7 +79,6 @@ class BuildInsightsOperation: NSOperation {
     
             //long task
             dispatch_async(dispatch_get_main_queue(), {
-                print("Trying to write to file")
                 let file = "file.html" //this is the file. we will write to and read from it
                 
                 let text = self.document!.HTMLContent //just a text
@@ -91,7 +89,6 @@ class BuildInsightsOperation: NSOperation {
                     //writing
                     do {
                         try text.writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
-                        print("WROTE TO FILE")
                     }
                     catch { print("Falied to write") }
                 }
@@ -263,8 +260,7 @@ class BuildInsightsOperation: NSOperation {
             if let moves = towerEvents[dayComponents].first?.result
             {
                 let score = Int(moves.valueString)
-                print("Score is"
-                    + moves.valueString)
+    
                 
                 if(score > 0) {
                 towerValues.append(score!)
