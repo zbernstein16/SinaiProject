@@ -233,7 +233,7 @@ extension MainViewController: ORKTaskViewControllerDelegate
         let dateToFire = calendar.dateFromComponents(components)!
         notif.fireDate = dateToFire
         notif.timeZone = NSTimeZone.systemTimeZone()
-        notif.repeatInterval = NSCalendarUnit.Minute
+        notif.repeatInterval = NSCalendarUnit.Day
         
         UIApplication.sharedApplication().scheduleLocalNotification(notif)
         

@@ -15,6 +15,9 @@
 		A2E767C6194594DC00869113 /* ToDoItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2E767C5194594DC00869113 /* ToDoItemViewController.swift */; };
 		A31A89F71BF3FDFA00C7B656 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A31A89F61BF3FDFA00C7B656 /* Launch Screen.storyboard */; };
 		A3BBD77D1C05181600DD0DB0 /* MicrosoftAzureMobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A3BBD77C1C05181600DD0DB0 /* MicrosoftAzureMobile.framework */; };
+		CE06D5A61CE6235B00BB233D /* ConsentTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06D5A51CE6235B00BB233D /* ConsentTask.swift */; };
+		CEA71BD81CE6C59800A4BAEF /* ConsentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA71BD71CE6C59800A4BAEF /* ConsentViewController.swift */; };
+		CEA71BDF1CE6C59800A4BAEF /* ConsentDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA71BDE1CE6C59800A4BAEF /* ConsentDocument.swift */; };
 		CEFF461A1CE306E900C7CCEB /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF46091CE306E800C7CCEB /* Activity.swift */; };
 		CEFF461B1CE306E900C7CCEB /* Assessment.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF460A1CE306E800C7CCEB /* Assessment.swift */; };
 		CEFF461C1CE306E900C7CCEB /* BackPain.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF460B1CE306E800C7CCEB /* BackPain.swift */; };
@@ -112,6 +115,9 @@
 		A2E767C5194594DC00869113 /* ToDoItemViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToDoItemViewController.swift; sourceTree = "<group>"; };
 		A31A89F61BF3FDFA00C7B656 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		A3BBD77C1C05181600DD0DB0 /* MicrosoftAzureMobile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MicrosoftAzureMobile.framework; sourceTree = "<group>"; };
+		CE06D5A51CE6235B00BB233D /* ConsentTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsentTask.swift; sourceTree = "<group>"; };
+		CEA71BD71CE6C59800A4BAEF /* ConsentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsentViewController.swift; sourceTree = "<group>"; };
+		CEA71BDE1CE6C59800A4BAEF /* ConsentDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsentDocument.swift; sourceTree = "<group>"; };
 		CEFF46091CE306E800C7CCEB /* Activity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		CEFF460A1CE306E800C7CCEB /* Assessment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Assessment.swift; sourceTree = "<group>"; };
 		CEFF460B1CE306E800C7CCEB /* BackPain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackPain.swift; sourceTree = "<group>"; };
@@ -171,6 +177,7 @@
 			isa = PBXGroup;
 			children = (
 				A2D9CBC31943C2540017F096 /* AppDelegate.swift */,
+				CEA71BDD1CE6C59800A4BAEF /* Consent */,
 				CEFF464D1CE309AB00C7CCEB /* View Controllers */,
 				CEFF464C1CE3093F00C7CCEB /* Insights */,
 				CEFF464A1CE3090E00C7CCEB /* CareKit Model */,
@@ -203,6 +210,15 @@
 			);
 			name = frameworks;
 			path = ..;
+			sourceTree = "<group>";
+		};
+		CEA71BDD1CE6C59800A4BAEF /* Consent */ = {
+			isa = PBXGroup;
+			children = (
+				CEA71BDE1CE6C59800A4BAEF /* ConsentDocument.swift */,
+				CE06D5A51CE6235B00BB233D /* ConsentTask.swift */,
+			);
+			name = Consent;
 			sourceTree = "<group>";
 		};
 		CEFF462C1CE3077600C7CCEB /* Products */ = {
@@ -263,6 +279,7 @@
 		CEFF464D1CE309AB00C7CCEB /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				CEA71BD71CE6C59800A4BAEF /* ConsentViewController.swift */,
 				CEFF46111CE306E900C7CCEB /* docViewController.swift */,
 				CEFF46101CE306E900C7CCEB /* DiscreteGraphDataSource.swift */,
 				CEFF46131CE306E900C7CCEB /* MainViewController.swift */,
@@ -392,6 +409,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEA71BD81CE6C59800A4BAEF /* ConsentViewController.swift in Sources */,
 				CEFF461A1CE306E900C7CCEB /* Activity.swift in Sources */,
 				CEFF46291CE306E900C7CCEB /* TakeMedication.swift in Sources */,
 				CEFF461D1CE306E900C7CCEB /* BuildInsightsOperation.swift in Sources */,
@@ -404,9 +422,11 @@
 				CEFF46201CE306E900C7CCEB /* DashboardTableViewController.swift in Sources */,
 				CEFF46231CE306E900C7CCEB /* InsightsBuilder.swift in Sources */,
 				CEFF46271CE306E900C7CCEB /* OCKInsightItem+EmptyMessage.swift in Sources */,
+				CEA71BDF1CE6C59800A4BAEF /* ConsentDocument.swift in Sources */,
 				CEFF46241CE306E900C7CCEB /* MainViewController.swift in Sources */,
 				CEFF46281CE306E900C7CCEB /* SampleData.swift in Sources */,
 				CEFF46251CE306E900C7CCEB /* NameSurvey.swift in Sources */,
+				CE06D5A61CE6235B00BB233D /* ConsentTask.swift in Sources */,
 				CEFF46261CE306E900C7CCEB /* NSCalendar+Dates.swift in Sources */,
 				CEFF46491CE308C000C7CCEB /* QueryActivityEventsOperation.swift in Sources */,
 				CEFF46211CE306E900C7CCEB /* DiscreteGraphDataSource.swift in Sources */,
