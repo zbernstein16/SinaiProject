@@ -23,10 +23,10 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     var chartViewController:DashboardTableViewController!
     var surveyVC: ORKTaskViewController!
     
-    var client:MSClient?
-    var activityResultsTable:MSTable?
-    
-    
+//    var client:MSClient?
+//    var activityResultsTable:MSTable?
+//    
+//    
     let serialQueue = dispatch_queue_create("com.zachbern", DISPATCH_QUEUE_SERIAL)
     let bigQue = dispatch_queue_create("com.zachbern2", DISPATCH_QUEUE_SERIAL)
     
@@ -34,11 +34,11 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     
     required init?(coder aDecoder:NSCoder)
     {
-        //SETUP AZURE CONNECTION
-        client = MSClient(
-            applicationURLString:"https://testcarekit.azurewebsites.net"
-        )
-        activityResultsTable = client!.tableWithName("ActivityResults")
+//        //SETUP AZURE CONNECTION
+//        client = MSClient(
+//            applicationURLString:"https://testcarekit.azurewebsites.net"
+//        )
+//        activityResultsTable = client!.tableWithName("ActivityResults")
 
         
         //SETUP CAREKIT AND RESEARCHKIT
@@ -74,7 +74,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     //MARK: Default View Methods
     
     override func viewDidLoad() {
-       
+        self.scheduleNotification()
         super.viewDidLoad()
 
     }
@@ -151,17 +151,17 @@ extension MainViewController:OCKCareCardViewControllerDelegate
         //0:Initial 1:Not completed -> Completed
         //2 -> Just unfilled
   
-        let components = interventionEvent.date // local date time: Jun 27, 2014, 9:32 AM
-        let dateString = String(components.month) + "/" + String(components.day) + "/" + String(components.year)
-        let index = interventionEvent.occurrenceIndexOfDay
-        var eventResult:String!
-        switch interventionEvent.state.rawValue {
-        case 0 | 1:
-            eventResult = "Completed"
-        default:
-            eventResult = "Not-Completed"
-        }
-        queryTableForResults(interventionEvent, date: dateString, valueString: eventResult, index: index)
+//        let components = interventionEvent.date // local date time: Jun 27, 2014, 9:32 AM
+//        let dateString = String(components.month) + "/" + String(components.day) + "/" + String(components.year)
+//        let index = interventionEvent.occurrenceIndexOfDay
+//        var eventResult:String!
+//        switch interventionEvent.state.rawValue {
+//        case 0 | 1:
+//            eventResult = "Completed"
+//        default:
+//            eventResult = "Not-Completed"
+//        }
+       
     }
 
 }
@@ -214,152 +214,31 @@ extension MainViewController: ORKTaskViewControllerDelegate
     private func completeEvent(event: OCKCarePlanEvent, inStore store: OCKCarePlanStore, withResult result: OCKCarePlanEventResult) {
         store.updateEvent(event, withResult: result, state: .Completed) { success, _, error in
             print("EVENT RESULT: " + result.valueString)
-    
-            
-            
-           
-            let components = event.date // local date time: Jun 27, 2014, 9:32 AM
-            let dateString = String(components.month) + "/" + String(components.day) + "/" + String(components.year)
-            let index = event.occurrenceIndexOfDay
-            let eventResult = result.valueString
-            
-            self.queryTableForResults(event, date: dateString, valueString: eventResult, index: index)
-
-            
         }
         
     }
     
-//MARK: Azure upload methods
-    func queryTableForResults(event:OCKCarePlanEvent, date:String,valueString:String,index:UInt)
-    {
+//MARK: Background Notification executes every minute while app is open
+    func scheduleNotification() {
+        UIApplication.sharedApplication().cancelAllLocalNotifications()
+        let notif:UILocalNotification! = UILocalNotification()
 
-        var eventName:String!
-        if event.activity.type == .Intervention
-        {
-            eventName = event.activity.identifier + event.activity.title
-        }
-        else
-        {
-            eventName = event.activity.identifier
-        }
-        let components = event.date // local date time: Jun 27, 2014, 9:32 AM
-        let dateString = String(components.month) + "/" + String(components.day) + "/" + String(components.year)
-        let index = event.occurrenceIndexOfDay
-       
+        //Set up Daily Fire Schedule
+        let calendar = NSCalendar.currentCalendar()
+        let components = calendar.components([NSCalendarUnit.Day, NSCalendarUnit.Month,NSCalendarUnit.Year], fromDate: NSDate())
+        components.hour = 11
+        components.minute = 38
+        components.second = 0
+        calendar.timeZone = NSTimeZone.systemTimeZone()
+        let dateToFire = calendar.dateFromComponents(components)!
+        notif.fireDate = dateToFire
+        notif.timeZone = NSTimeZone.systemTimeZone()
+        notif.repeatInterval = NSCalendarUnit.Minute
         
-        // Create a predicate that finds if pre-existing item for this specific events exists
-        let datePredicate = NSPredicate(format:"date == '\(dateString)'")
-        let eventNamePredicate = NSPredicate(format:"eventName == '\(eventName)'")
-        let indexPredicate = NSPredicate(format: "index == \(index)")
-        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [datePredicate,eventNamePredicate,indexPredicate])
+        UIApplication.sharedApplication().scheduleLocalNotification(notif)
         
-        /////////////
-       
         
-       dispatch_async(self.bigQue)
-       {
-            dispatch_suspend(self.bigQue)
-            self.activityResultsTable!.readWithPredicate(predicate) { (result, error) in
-                                    print("QUERY")
-                                                if let err = error {
-                                                    print("ERROR ", err)
-                                                } else if let items = result?.items where items.count > 0 {
-                                                  
-                                                    
-                                                    
-                                                                        let oldItem = items.first!
-                                                                   
-                                                    
-                                                                                                switch event.activity.type
-                                                                                                {
-                                                                                                        case OCKCarePlanActivityType.Intervention:
-                                                                                                            print("Delete")
-                                                                                                                self.activityResultsTable!.delete(oldItem, completion: { (result, error) -> Void in
-                                                                                                                    dispatch_resume(self.bigQue)
-                                                                                                                    if let err = error {
-                                                                                                                    print("ERROR ", err)
-                                                                                                                    } else if let _ = result {
-                                                                                                                    //print("New value:" + newItem["valueString"])
-                                                                                                                    }
-                                                                                                                    print("B")
-                                                                                                                    })
-                                                                                                            
-                                                                                                    
-                                                                                                        case OCKCarePlanActivityType.Assessment:
-                                                                                                           print("Update")
-                                                                                                            var newItem = oldItem as! [NSString : AnyObject]
-                                                                                                            newItem["valueString"] = valueString
-                                                                                                        
-                                                                                                                        self.activityResultsTable!.update(newItem as [NSObject: AnyObject], completion: { (result, error) -> Void in
-                                                                                                                        
-                                                                                                                            dispatch_resume(self.bigQue)
-                                                                                                                            if let err = error {
-                                                                                                                                print("ERROR ", err)
-                                                                                                                            } else if let _ = result {
-                                                                                                                                //print("New value:" + newItem["valueString"])
-                                                                                                                            }
-                                                                                                                        })
-                                                                                                        
-                                                                                                            
-                                                                                                    
-                                        
-                                                                                                    
-
-                                                                                                }
-                                                                        
-                                                    
-                                                    
-                                                } else {
-                                                    
-                                                    
-                                                            //IF NO PREVIOUS ITEM FOUND, CREATE NEW ONE, ADD IT TO END OF SERIAL QUE
-                                                    
-                                                    
-                                                                        if valueString != "Not-Completed"
-                                                                        {
-                                                                             self.insertNewItem(eventName, date: dateString, valueString:valueString, index: index)
-                                                                        }
-                                                                
-                                                            
-                                                    
-                                                    
-                                            }
-                
-                
-        
-        }
-       
-        
-        }
     }
-    
-    
-    
-    func insertNewItem(eventName:String, date:String,valueString:String,index:UInt)
-    {
-        let item = ["eventName":eventName,"date":date,"valueString":valueString,"index":index]
-        self.activityResultsTable!.insert(item as! [NSString : AnyObject]) {
-            (insertedItem, errorOrNil) in
-         
-            dispatch_resume(self.bigQue)
-             print("A")
-            if let error = errorOrNil {
-                print("Error" + error.description);
-            } else {
-                //let insertedItem = insertedItem as! Dictionary<String,String>
-                print("Item inserted, id: " + (insertedItem!["id"]! as! String))
-            }
-        }
-
-    }
-    func delay(delay:Double, closure:()->()) {
-        dispatch_after(
-            dispatch_time(
-                DISPATCH_TIME_NOW,
-                Int64(delay * Double(NSEC_PER_SEC))
-            ),
-            self.serialQueue, closure)
-    }
+   
 
 }
