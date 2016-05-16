@@ -105,7 +105,7 @@
         <!--Navigation Controller-->
         <scene sceneID="WLb-S5-HdM">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Hdc-D6-s3t" sceneMemberID="viewController">
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" navigationBarHidden="YES" id="Hdc-D6-s3t" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="jBW-hg-hxE">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>

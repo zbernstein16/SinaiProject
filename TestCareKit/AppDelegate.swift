@@ -35,6 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         client = MSClient(
             applicationURLString:"https://testcarekit.azurewebsites.net"
         )
+        
         activityResultsTable = client!.tableWithName("TodoItem")
         
         let storeManager = CarePlanStoreManager.sharedCarePlanStoreManager
@@ -136,8 +137,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //MARK: Normal Methods
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject : AnyObject]?) -> Bool {
         // Override point for customization after application launch.
-       
-        UIApplication.sharedApplication().setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
+        let twelveHourInterval:NSTimeInterval! = 12 * 60 * 60
+        UIApplication.sharedApplication().setMinimumBackgroundFetchInterval(twelveHourInterval)
+        //UIApplication.sharedApplication().setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
        
         //REQUIRED FOR NOTIFICATIONS TO SHOW UP
         application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes:[.Alert, .Badge, .Sound], categories: nil))  // types are UIUserNotificationType members

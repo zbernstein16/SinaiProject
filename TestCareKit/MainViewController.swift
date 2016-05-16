@@ -65,8 +65,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         self.viewControllers = [
             UINavigationController(rootViewController: careCardViewController),
             UINavigationController(rootViewController: symptomTrackerViewController),
-            UINavigationController(rootViewController: insightsViewController),UINavigationController(rootViewController: docViewController),
-            UINavigationController(rootViewController: chartViewController)
+            UINavigationController(rootViewController: insightsViewController),UINavigationController(rootViewController: docViewController)
         ]
         
         storeManager.delegate = self

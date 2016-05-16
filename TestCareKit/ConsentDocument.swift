@@ -28,7 +28,7 @@ public var ConsentDocument: ORKConsentDocument {
     let consentSections: [ORKConsentSection] = consentSectionTypes.map { contentSectionType in
         let consentSection = ORKConsentSection(type: contentSectionType)
         consentSection.summary = "If you wish to complete this study..."
-        consentSection.content = "In this study you will be asked five (wait, no, three!) questions. You will also have your voice recorded for ten seconds."
+        consentSection.content = "In this study you will be asked to submit data"
         return consentSection
     }
     

@@ -45,7 +45,7 @@ class BuildInsightsOperation: NSOperation {
     
     //Create document elements
     let subheadElement:OCKDocumentElementSubtitle = OCKDocumentElementSubtitle(subtitle: "Charts")
-    var chartElement:OCKDocumentElementChart!
+    var chartElement:OCKDocumentElementChart?
 
     
     // MARK: NSOperation
@@ -75,7 +75,12 @@ class BuildInsightsOperation: NSOperation {
       
       
         //Updates Document
-        document = OCKDocument(title: "Weekly Summary", elements: [subheadElement,chartElement])
+        //TODO: NEED TO FIX THIS ERROR
+        if let chart = chartElement
+        {
+            document = OCKDocument(title: "Weekly Summary", elements: [subheadElement,chart])
+        }
+       
     
             //long task
             dispatch_async(dispatch_get_main_queue(), {
