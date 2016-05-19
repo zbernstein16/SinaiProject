@@ -15,21 +15,29 @@ class Drug: Activity {
     var drugName: String!
     var startDate:NSDateComponents!
     var freq:Int!
-    init(withName name:String,start:NSDateComponents,occurences:Int)
+    var id:Int!
+    init(withName name:String,start:NSDate,occurences:Int, medId:Int)
     {
         self.drugName = name
-        self.startDate = start
+        self.startDate = start.dateComponents()
         self.freq = occurences
+        self.id = medId
     }
     func carePlanActivity() -> OCKCarePlanActivity {
+        print("Frequency")
+        print(freq)
         
+        //TODO: REMOVE THIS
         let schedule = OCKCareSchedule.dailyScheduleWithStartDate(startDate, occurrencesPerDay:UInt(freq))
+       
+
         
         
+        let identifier = String("\(id)/\(freq)")
+        return OCKCarePlanActivity.interventionWithIdentifier(identifier, groupIdentifier: "", title: drugName, text: nil, tintColor: UIColor.redColor(), instructions: "Take \(freq) time(s) a day", imageURL: nil, schedule: schedule, userInfo: nil)
+
         
-        return OCKCarePlanActivity.interventionWithIdentifier(activityType.rawValue, groupIdentifier: "", title: drugName, text: nil, tintColor: UIColor.redColor(), instructions: "Take \(freq) time(s) a day", imageURL: nil, schedule: schedule, userInfo: nil)
-        
-        
+       
         
         
     }

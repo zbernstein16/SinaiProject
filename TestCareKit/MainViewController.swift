@@ -35,11 +35,6 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     
     required init?(coder aDecoder:NSCoder)
     {
-//        //SETUP AZURE CONNECTION
-//        client = MSClient(
-//            applicationURLString:"https://testcarekit.azurewebsites.net"
-//        )
-//        activityResultsTable = client!.tableWithName("ActivityResults")
         
         
         //SETUP CAREKIT AND RESEARCHKIT
@@ -78,6 +73,26 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         NSUserDefaults.standardUserDefaults().setBool(true, forKey: "surveyCompleted")
     
         
+        storeManager.store.activitiesWithCompletion()
+        {
+            (bool, activities, error) in
+            for activity in activities where activities.count > 0
+            {
+                print("\(activity.identifier)")
+            }
+        }
+        
+        
+        careCardViewController = createCareCardViewController()
+        careCardViewController.store
+        symptomTrackerViewController = createSymptomTrackerViewController()
+        insightsViewController = createInsightsViewController()
+        
+        self.viewControllers = [
+            UINavigationController(rootViewController: careCardViewController),
+            UINavigationController(rootViewController: symptomTrackerViewController),
+            UINavigationController(rootViewController: insightsViewController),UINavigationController(rootViewController: docViewController)
+        ]
         
         self.scheduleNotification()
         super.viewDidLoad()
@@ -91,6 +106,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     //MARK: Initialize Tab Controllers
     
     func createCareCardViewController() -> OCKCareCardViewController {
+        print("Create new care Card")
         let viewController = OCKCareCardViewController(carePlanStore:storeManager.store)
         viewController.delegate = self
         viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Refresh", style: .Plain, target: self, action: #selector(refresh))
@@ -138,7 +154,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         print("Refresh")
         //1: Query Patient-Med-Freq for all medications this person is taking
         //2: For each medication, construct the identifier by creating string Med_id/Freq e.g ibuprofen id =1, Freq 3 -> Identifier: 1/3
-        //3: Check if medication exists with that identifier
+        //3: Check if medication already exists  in storewith that identifier
         //4: If it does not, query through Medication table, tell storeManager to run method with given type of medication and pass argument to add new activity
         
         //1
@@ -148,7 +164,9 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         {
             results, errorOrNil in
             if let error = errorOrNil{
-                fatalError(error.localizedDescription)
+                let alert = UIAlertController(title: "Error", message:"Failed to Refresh", preferredStyle: .Alert)
+                alert.addAction(UIAlertAction(title: "Okay", style: .Default) { _ in })
+                self.presentViewController(alert, animated: true){}
             }
             else if let results = results
             {
@@ -182,23 +200,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         
         let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
         dispatch_async(dispatch_get_global_queue(priority, 0)) {
-           
-            
-//            var testString = "haha"
-//            switch self.checkIfActivityExistsWithIdentifier(testString) {
-//            case true:
-//                //Activity already exists, dont do anything
-//                break;
-//            case false:
-//                //Actiivty doesnt exist, we need to add it
-//                print("Activity doesnt exist")
-//                
-//            }
-//            
-            
-            
-            
-            
+    
             
             
             dispatch_async(dispatch_get_main_queue()) {
@@ -208,38 +210,39 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         
         
     }
-    func checkIfActivityExistsWithIdentifier(identifier:String)  {
-    
-        storeManager.store.activityForIdentifier(identifier) { (success, activityOrNil, errorOrNil) -> Void in
-            guard success else {
-                // perform real error handling here.
-                fatalError("*** An error occurred \(errorOrNil?.localizedDescription) ***")
-            }
-            
-            if let _ = activityOrNil {
-                
-                //Do Nothing
-                
-            } else {
-                
-                //Add activity
-                
-            }
-        }
-        
-    }
     func insertActivity() {
      
+         let newMed = ["Name":"Ibuprofen","Type":"Drug"]
+        var medId:Int!
+        appDelegate.medicationTable!.insert(newMed)
+        {
+            (result, error) in
+            if let err = error {
+                print("Error", err)
+            }
+            else if let item = result {
+                let med = item as! Dictionary<String,AnyObject>
+                print("Inserted new Med")
+                medId = med["id"]! as! Int
+                
+                
+                let newPatMedFreq:[String:AnyObject] = ["Patient_id":NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey),"Med_id":medId,"Freq":2,"Start_Date":"2000-01-01"]
+                self.appDelegate.PatientMedFreqTable!.insert(newPatMedFreq) { (result, error) in
+                    if let err = error {
+                        print("ERROR ", err)
+                    } else if let item = result {
+                        print("Inserted new PatMedFreq")
+                        
+                    }
+                }
+                
+                
+            }
+            
+            
+        }
         
-//        let newPatMedFreq = ["Patient_id":2,"Med_id":1,"Freq":2]
-//        appDelegate.PatientMedFreqTable!.insert(newPatMedFreq) { (result, error) in
-//            if let err = error {
-//                print("ERROR ", err)
-//            } else if let item = result {
-//                print("Inserted new PatMedFreq")
-//
-//            }
-//        }
+       
         
         
         

@@ -36,6 +36,7 @@ class CarePlanStoreManager: NSObject {
     static var sharedCarePlanStoreManager = CarePlanStoreManager()
     
     // MARK: Properties
+    let appDelegate:AppDelegate = UIApplication.sharedApplication().delegate! as! AppDelegate
     
     weak var delegate: CarePlanStoreManagerDelegate?
     
@@ -90,8 +91,52 @@ class CarePlanStoreManager: NSObject {
     }
     func handleNewMedication(PatMedFreqDictionary:Dictionary<String,AnyObject>)
     {
+        let medId:Int = PatMedFreqDictionary["Med_id"] as! Int
+        let freq:Int = PatMedFreqDictionary["Freq"] as! Int
+        let startDate:NSDate = PatMedFreqDictionary["Start_Date"] as! NSDate
+        
+        
+        //4: Query through Med table with MedId to get all events with that Id
+        
+        let predicate = NSPredicate(format:"id == \(medId)", argumentArray: nil)
+        self.appDelegate.medicationTable!.readWithPredicate(predicate)
+        {
+            results, errorOrNil in
+            if let error = errorOrNil
+            {
+                fatalError(error.localizedDescription)
+            }
+            else if let results = results
+            {
+                for medication in results.items
+                {
+                    let name:String = medication["Name"] as! String
+                    let type:String = medication["Type"] as! String
+                    //TODO: Add more types here 
+                    switch type {
+                        case "Drug":
+                           let drug = Drug(withName: name, start: startDate, occurences: freq, medId:medId)
+                           self.store.addActivity(drug.carePlanActivity()) {
+                            success, error in
+                            if !success {
+                                
+                            }
+                            else
+                            {
+                                
+                            }
+                        }
+                        case "Paint":
+                            print("Found Pain")
+                        default:
+                            break
+                    }
+                }
+            }
+        }
         
     }
+    
     
 }
 

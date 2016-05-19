@@ -18,6 +18,7 @@ class ConsentViewController: UIViewController {
         appDelegate.adherenceTable = appDelegate.client!.tableWithName("Adherence")
         appDelegate.patientTable = appDelegate.client!.tableWithName("Patient")
         appDelegate.PatientMedFreqTable = appDelegate.client!.tableWithName("Patient_Med_Freq")
+        appDelegate.medicationTable = appDelegate.client!.tableWithName("Medication")
         
         let file = "consent.pdf" //this is the file. we will write to and read from it
         if let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first {
@@ -25,6 +26,7 @@ class ConsentViewController: UIViewController {
             if NSFileManager.defaultManager().fileExistsAtPath(path.path!)
             {
                 print("Signature already found")
+                self.appDelegate.uploadJSON()
                 self.performSegueWithIdentifier("toMain", sender: nil)
             }
             else
@@ -54,8 +56,7 @@ extension ConsentViewController : ORKTaskViewControllerDelegate {
             
             print("Result of Date of birth")
             let dob = taskViewController.result.stepResultForStepIdentifier("dateOfBirthPage")!.firstResult! as! ORKDateQuestionResult
-            let dateString:String = NSDate.monthDayYearStringFromNSDate(dob.dateAnswer!)
-            
+            let dateString = dob.dateAnswer!.monthDayYearString()
             
             
                     let copy = ConsentDocument.copy() as! ORKConsentDocument

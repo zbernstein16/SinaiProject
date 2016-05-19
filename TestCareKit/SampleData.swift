@@ -17,8 +17,9 @@ class SampleData: NSObject {
     
         //Array of activities used in app
 
-    let activities:[Activity] = [BackPain(),TakeMedication(withName:"Ibuprofen"),NameSurvey(),ChoiceSurvey(),Tower(),TakeMedication(withName:"Aleve")]
-    
+    //let activities:[Activity] = [BackPain(),TakeMedication(withName:"Ibuprofen"),NameSurvey(),ChoiceSurvey(),Tower(),TakeMedication(withName:"Aleve")]
+    var activities:[Activity]?
+
         //Array of Contacts to display 
     
         //TODO: Incorporate way of getting these from database
@@ -51,25 +52,25 @@ class SampleData: NSObject {
         
         
         
-        
+        //TODO: CHECK THIS OUT
         // Populate the store with the sample activities.
-        for sampleActivity in activities {
-            let carePlanActivity = sampleActivity.carePlanActivity()
-            
-            
-            carePlanStore.addActivity(carePlanActivity) { success, error in
-                if !success {
-                    print(error?.localizedDescription)
-                }
-            }
-        }
+//        for sampleActivity in activities {
+//            let carePlanActivity = sampleActivity.carePlanActivity()
+//            
+//            
+//            carePlanStore.addActivity(carePlanActivity) { success, error in
+//                if !success {
+//                    print(error?.localizedDescription)
+//                }
+//            }
+//        }
         
     }
     //MARK: Helper
     
     //Returns any activity with given type
     func activityWithType(type: ActivityType) -> Activity? {
-        for activity in activities where activity.activityType == type {
+        for activity in activities! where activity.activityType == type {
             return activity
         }
         

@@ -25,20 +25,32 @@ extension NSCalendar {
 extension NSDate {
     
     
-    class func monthDayYearStringFromNSDate(date:NSDate) -> String
+
+    func monthDayYearString() -> String
     {
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "MM-dd-YYYY"
-        return dateFormatter.stringFromDate(date)
+        return dateFormatter.stringFromDate(self)
     }
-    class func dateComponentsFromMonthDayYearString(string:String) -> NSDateComponents
+    func hourMinutesString() -> String
     {
         let dateFormatter = NSDateFormatter()
-        dateFormatter.dateFormat = "MM-dd-YYYY"
-        let date:NSDate = dateFormatter.dateFromString(string)!
+        dateFormatter.dateFormat = "HH:mm"
+        return dateFormatter.stringFromDate(self)
+        
+    }
+    func dateComponents() -> NSDateComponents
+    {
+
         let calendar = NSCalendar.currentCalendar()
-        let components = calendar.components([.Month, .Day], fromDate: date)
+        let components = calendar.components([.Year, .Month, .Day], fromDate: self)
         return components
+
     }
-    
+    class func dateFromComponents(components:NSDateComponents) -> NSDate
+    {
+        let calendar = NSCalendar(identifier: NSCalendarIdentifierGregorian)!
+        return calendar.dateFromComponents(components)!
+    }
+
 }

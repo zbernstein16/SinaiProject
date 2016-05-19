@@ -23,6 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var adherenceTable:MSTable?
     var patientTable:MSTable?
     var PatientMedFreqTable:MSTable?
+    var medicationTable:MSTable?
     var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
     
     var window: UIWindow?
@@ -51,9 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 
                 let storeManager = CarePlanStoreManager.sharedCarePlanStoreManager
                 let date = NSDate()
-                let calendar = NSCalendar(calendarIdentifier:NSCalendarIdentifierGregorian)
-                let dateComponents = calendar!.components([.Day,.Month,.Year], fromDate: date)
-                let dateString = String(dateComponents.month) + "/" + String(dateComponents.day) + "/" + String(dateComponents.year)
+                let dateComponents = date.dateComponents()
                 
                 
 //                //THIS OBJECT WILL EVENTUALLY BE SERIALIZED INTO JSON DATA
@@ -66,26 +65,50 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //                let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
 //                dispatch_async(dispatch_get_global_queue(priority, 0)) {
 //                 
-//                    
-//                    storeManager.store.eventsOnDate(dateComponents, type: .Intervention) { activities, errorOrNil in
-//                        for activity in activities
-//                        {
-//                            for event in activity
-//                            {
-//                                
-//                                let eventName:String! = event.activity.title + String(event.occurrenceIndexOfDay)
-//                                var result:String
-//                                switch event.state.rawValue
-//                                {
-//                                case 2:
-//                                    result = "Complete"
-//                                default:
-//                                    result = "Incomplete"
-//                                }
-//                                objectForDate[eventName] = result
-//                            }
-//                        }
-//                    }
+                    
+                    storeManager.store.eventsOnDate(dateComponents, type: .Intervention) { activities, errorOrNil in
+                        for activity in activities
+                        {
+                            for event in activity
+                            {
+                                let identifier = event.activity.identifier
+                                let components = identifier.componentsSeparatedByString("/")
+                                let medId:Int = Int(components.first!)!
+                                
+                                let date = NSDate.dateFromComponents(event.date).monthDayYearString()
+                                let time = NSDate.dateFromComponents(event.date).hourMinutesString()
+                                
+                                var result:Int
+                                switch event.state.rawValue
+                                {
+                                case 2:
+                                    result = 1
+                                default:
+                                    result = 0
+                                }
+                                let newPost:[String:AnyObject] = ["Patient_id":NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey),
+                                               "Med_id":medId,
+                                               "Status":result,
+                                               "Date":date,
+                                               "Time":time
+                                               ]
+                                self.adherenceTable!.insert(newPost)
+                                {
+                                     result, errorOrNil in
+                                    if let error = errorOrNil
+                                    {
+                                        print(error.localizedDescription)
+                                    }
+                                    else
+                                    {
+                                        print("Posted")
+                                    }
+                                    
+                                }
+                               
+                            }
+                        }
+                    }
 //                    storeManager.store.eventsOnDate(dateComponents, type: .Assessment) { activities, errorOrNil in
 //                        for activity in activities
 //                        {
@@ -148,7 +171,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     
     func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
-        uploadJSON()
+        //TODO: REMOVE
+        //uploadJSON()
     }
     func registerBackgroundTask() {
         backgroundTask = UIApplication.sharedApplication().beginBackgroundTaskWithExpirationHandler {
@@ -183,7 +207,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes:[.Alert, .Badge, .Sound], categories: nil))  // types are UIUserNotificationType members
         
         
-        self.uploadJSON()
+        //self.uploadJSON()
         
         
     
