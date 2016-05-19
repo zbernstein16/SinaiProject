@@ -41,6 +41,17 @@ class SampleData: NSObject {
     required init(carePlanStore: OCKCarePlanStore) {
         super.init()
         
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         // Populate the store with the sample activities.
         for sampleActivity in activities {
             let carePlanActivity = sampleActivity.carePlanActivity()

@@ -39,8 +39,7 @@ class InsightsBuilder {
          `TakeMedication` activity.
          */
         
-        
-        //TODO: INCORPORATE NEW METRICS HERE
+    
         let medicationEventsOperation = QueryActivityEventsOperation(store: carePlanStore,
                                                                      activityIdentifier: ActivityType.TakeMedication.rawValue,
                                                                      startDate: queryDateRange.start,

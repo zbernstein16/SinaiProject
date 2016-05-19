@@ -49,7 +49,6 @@ extension Assessment {
                 return OCKCarePlanEventResult(valueString: "Failed", unitString: "", userInfo: nil)
             }
         }
-        //TODO: Add Task Result types for all possible activities
         fatalError("Unexpected task result type")
     }
 }

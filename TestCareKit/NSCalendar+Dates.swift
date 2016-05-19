@@ -22,3 +22,23 @@ extension NSCalendar {
         return (start!, end)
     }
 }
+extension NSDate {
+    
+    
+    class func monthDayYearStringFromNSDate(date:NSDate) -> String
+    {
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.dateFormat = "MM-dd-YYYY"
+        return dateFormatter.stringFromDate(date)
+    }
+    class func dateComponentsFromMonthDayYearString(string:String) -> NSDateComponents
+    {
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.dateFormat = "MM-dd-YYYY"
+        let date:NSDate = dateFormatter.dateFromString(string)!
+        let calendar = NSCalendar.currentCalendar()
+        let components = calendar.components([.Month, .Day], fromDate: date)
+        return components
+    }
+    
+}

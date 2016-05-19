@@ -15,107 +15,137 @@
 //
 import UIKit
 import CareKit
-
+import MobileCoreServices
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
  
     var client:MSClient?
-    var activityResultsTable:MSTable?
+    var adherenceTable:MSTable?
+    var patientTable:MSTable?
+    var PatientMedFreqTable:MSTable?
     var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
     
     var window: UIWindow?
- 
+  
+    
+   
+    
+
 //MARK: Azure Methods
     
     //Every time user opens app for first time, or app enters background, or whenever background fetch occurs, this will query through all the health data for the past few days and generate a JSON file and upload it.
     func uploadJSON() {
         
-        registerBackgroundTask()
-        //SETUP AZURE CONNECTION
-        client = MSClient(
-            applicationURLString:"https://testcarekit.azurewebsites.net"
-        )
         
-        activityResultsTable = client!.tableWithName("TodoItem")
-        
-        let storeManager = CarePlanStoreManager.sharedCarePlanStoreManager
-        let date = NSDate()
-        let calendar = NSCalendar(calendarIdentifier:NSCalendarIdentifierGregorian)
-        let dateComponents = calendar!.components([.Day,.Month,.Year], fromDate: date)
-        let dateString = String(dateComponents.month) + "/" + String(dateComponents.day) + "/" + String(dateComponents.year)
-        
-        
-        //THIS OBJECT WILL EVENTUALLY BE SERIALIZED INTO JSON DATA
-        var objectForDate:Dictionary<String,AnyObject>! = [String:AnyObject]()
-        objectForDate["date"] = dateString
-        
-        
-        
-        //Queries through all events of the current date (of type intervention, i.e the circle activities) and returns an array of them as events
-        storeManager.store.eventsOnDate(dateComponents, type: .Intervention) { activities, errorOrNil in
-            for activity in activities
+        //UPDATE WILL ONLY FIRE IF USER HAS COMPLETED SURVEY. I.E HAS NAVIGATED TO MAIN VIEW CONTROLLER AND REGISTERD FOR UPDATE NOTIFICATION
+            if NSUserDefaults.standardUserDefaults().boolForKey("surveyCompleted") == true
             {
-                for event in activity
-                {
-                    let eventName:String! = event.activity.title + String(event.occurrenceIndexOfDay)
-                    var result:String
-                    switch event.state.rawValue
-                    {
-                    case 2:
-                        result = "Complete"
-                    default:
-                        result = "Incomplete"
-                    }
-                    objectForDate[eventName] = result
-                }
-            }
-        }
-        storeManager.store.eventsOnDate(dateComponents, type: .Assessment) { activities, errorOrNil in
-            for activity in activities
-            {
-                for event in activity
-                {
-                    let eventName:String! = event.activity.title + String(event.occurrenceIndexOfDay)
-                    if let result = event.result
-                    {
-                        objectForDate[eventName] = result.valueString
-                    }
-                    else
-                    {
-                        objectForDate[eventName] = "Incomplete"
-                    }
-                }
-            }
-            
-        }
-        var jsonData:NSData?
-        do {
-        jsonData = try NSJSONSerialization.dataWithJSONObject(objectForDate, options: NSJSONWritingOptions.PrettyPrinted)
-        }
-        catch {
-            fatalError("Failed to serialize JSON")
-        }
-        print(jsonData!)
-        
-        
-        //https://carekitteststorage.blob.core.windows.net/test
-        
+                print("WILL UPLOAD JSON")
+                
+                //This allows uploads to occur in the background
+                registerBackgroundTask()
+                
+                
+             
+               
+                
+                let storeManager = CarePlanStoreManager.sharedCarePlanStoreManager
+                let date = NSDate()
+                let calendar = NSCalendar(calendarIdentifier:NSCalendarIdentifierGregorian)
+                let dateComponents = calendar!.components([.Day,.Month,.Year], fromDate: date)
+                let dateString = String(dateComponents.month) + "/" + String(dateComponents.day) + "/" + String(dateComponents.year)
+                
+                
+//                //THIS OBJECT WILL EVENTUALLY BE SERIALIZED INTO JSON DATA
+//                var objectForDate:Dictionary<String,AnyObject>! = [String:AnyObject]()
+//                objectForDate["date"] = dateString
+//                
+//                
+//                
+//                //Queries through all events of the current date (of type intervention, i.e the circle activities) and returns an array of them as events
+//                let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
+//                dispatch_async(dispatch_get_global_queue(priority, 0)) {
+//                 
+//                    
+//                    storeManager.store.eventsOnDate(dateComponents, type: .Intervention) { activities, errorOrNil in
+//                        for activity in activities
+//                        {
+//                            for event in activity
+//                            {
+//                                
+//                                let eventName:String! = event.activity.title + String(event.occurrenceIndexOfDay)
+//                                var result:String
+//                                switch event.state.rawValue
+//                                {
+//                                case 2:
+//                                    result = "Complete"
+//                                default:
+//                                    result = "Incomplete"
+//                                }
+//                                objectForDate[eventName] = result
+//                            }
+//                        }
+//                    }
+//                    storeManager.store.eventsOnDate(dateComponents, type: .Assessment) { activities, errorOrNil in
+//                        for activity in activities
+//                        {
+//                            for event in activity
+//                            {
+//                                let eventName:String! = event.activity.title + String(event.occurrenceIndexOfDay)
+//                                if let result = event.result
+//                                {
+//                                    objectForDate[eventName] = result.valueString
+//                                }
+//                                else
+//                                {
+//                                    objectForDate[eventName] = "Incomplete"
+//                                }
+//                            }
+//                        }
+//                        
+//                    }
+//                    print(objectForDate)
+//                    var jsonData:NSData?
+//                    do {
+//                        jsonData = try NSJSONSerialization.dataWithJSONObject(objectForDate, options: NSJSONWritingOptions.PrettyPrinted)
+//                    }
+//                    catch {
+//                        fatalError("Failed to serialize JSON")
+//                    }
+//                    print(jsonData!)
+                
+                    
+                    //https://carekitteststorage.blob.core.windows.net/test
+                    
+                    
+                    
+                    //TODO: MUST ADD self.endBackgroundTask() after JSON UPload
+                    
+//                    let newItem = ["text": "my new item", "complete": false]
+//                    self.adherenceTable!.insert(newItem) { (result, error) in
+//                        if let err = error {
+//                            print("ERROR ", err)
+//                        } else if let item = result {
+//                            print("Item added")
+//                        }
+//                        self.endBackgroundTask()
+//                    }
+                
 
+                    
+                    
+                    
+                    
+                }
         
-        //TODO: MUST ADD self.endBackgroundTask() after JSON UPload
-//        
-//        let newItem = ["text": "my new item", "complete": false]
-//        activityResultsTable!.insert(newItem) { (result, error) in
-//            if let err = error {
-//                print("ERROR ", err)
-//            } else if let item = result {
-//                print("Todo Item: ", item["text"])
-//         }
-//            self.endBackgroundTask()
-//        }
-//        
+                
+                
+                
+                
+        }
         
-    }
+        
+    
     
     func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
         uploadJSON()
@@ -136,15 +166,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
 //MARK: Normal Methods
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject : AnyObject]?) -> Bool {
-        // Override point for customization after application launch.
+
+        
+        
+                
+        //Updates store in background every 12 hours
         let twelveHourInterval:NSTimeInterval! = 12 * 60 * 60
         UIApplication.sharedApplication().setMinimumBackgroundFetchInterval(twelveHourInterval)
-        //UIApplication.sharedApplication().setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
+        
+        
+        
+        
+
        
         //REQUIRED FOR NOTIFICATIONS TO SHOW UP
         application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes:[.Alert, .Badge, .Sound], categories: nil))  // types are UIUserNotificationType members
         
+        
         self.uploadJSON()
+        
+        
+    
         return true
     }
     func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
@@ -175,7 +217,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         // Saves changes in the application's managed object context before the application terminates.
-        uploadJSON()
+        endBackgroundTask()
     }
     
     // MARK: - Core Data stack
@@ -233,5 +275,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         managedObjectContext.persistentStoreCoordinator = coordinator
         return managedObjectContext
     }()
+}
+struct Constants
+{
+    static var userIdKey = "idKey"
 }
 

@@ -75,7 +75,6 @@ class BuildInsightsOperation: NSOperation {
       
       
         //Updates Document
-        //TODO: NEED TO FIX THIS ERROR
         if let chart = chartElement
         {
             document = OCKDocument(title: "Weekly Summary", elements: [subheadElement,chart])

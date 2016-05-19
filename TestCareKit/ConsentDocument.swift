@@ -25,6 +25,8 @@ public var ConsentDocument: ORKConsentDocument {
         .Withdrawing
     ]
     
+    
+
     let consentSections: [ORKConsentSection] = consentSectionTypes.map { contentSectionType in
         let consentSection = ORKConsentSection(type: contentSectionType)
         consentSection.summary = "If you wish to complete this study..."
@@ -34,7 +36,8 @@ public var ConsentDocument: ORKConsentDocument {
     
     consentDocument.sections = consentSections
     //Signature
-    consentDocument.addSignature(ORKConsentSignature(forPersonWithTitle: "Signature", dateFormatString: nil, identifier: "ConsentDocumentParticipantSignature"))
+    consentDocument.addSignature(ORKConsentSignature(forPersonWithTitle: "Patient", dateFormatString: nil, identifier: "ConsentDocumentParticipantSignature"))
+   
     
     return consentDocument
 

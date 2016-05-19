@@ -23,10 +23,11 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     var chartViewController:DashboardTableViewController!
     var surveyVC: ORKTaskViewController!
     
-//    var client:MSClient?
-//    var activityResultsTable:MSTable?
-//    
-//    
+    let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    var client:MSClient?
+    var adherenceTable:MSTable?
+    
+    
     let serialQueue = dispatch_queue_create("com.zachbern", DISPATCH_QUEUE_SERIAL)
     let bigQue = dispatch_queue_create("com.zachbern2", DISPATCH_QUEUE_SERIAL)
     
@@ -39,7 +40,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
 //            applicationURLString:"https://testcarekit.azurewebsites.net"
 //        )
 //        activityResultsTable = client!.tableWithName("ActivityResults")
-
+        
         
         //SETUP CAREKIT AND RESEARCHKIT
 
@@ -56,7 +57,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         
         chartViewController = DashboardTableViewController()
         chartViewController.title = "CHART"
-         //TODO: Add contact
+         //Add contact
         //connectViewController = createConnectViewController()
         
         
@@ -73,6 +74,11 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     //MARK: Default View Methods
     
     override func viewDidLoad() {
+        //Set survey completed to true
+        NSUserDefaults.standardUserDefaults().setBool(true, forKey: "surveyCompleted")
+    
+        
+        
         self.scheduleNotification()
         super.viewDidLoad()
 
@@ -87,6 +93,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     func createCareCardViewController() -> OCKCareCardViewController {
         let viewController = OCKCareCardViewController(carePlanStore:storeManager.store)
         viewController.delegate = self
+        viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Refresh", style: .Plain, target: self, action: #selector(refresh))
         
         // Setup the controller's title and tab bar item
         viewController.title = NSLocalizedString("Care Card", comment: "")
@@ -98,7 +105,9 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
    func createSymptomTrackerViewController() -> OCKSymptomTrackerViewController {
         let viewController = OCKSymptomTrackerViewController(carePlanStore:storeManager.store)
         viewController.delegate = self
-        
+        viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Refresh", style: .Plain, target: self, action: #selector(refresh))
+    
+    
         // Setup the controller's title and tab bar item
         viewController.title = NSLocalizedString("Symptom Tracker", comment: "")
         viewController.tabBarItem = UITabBarItem(title: viewController.title, image: UIImage(named:"symptoms"), selectedImage: UIImage(named: "symptoms-filled"))
@@ -117,14 +126,128 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     func createInsightsViewController () -> OCKInsightsViewController {
         let headerTitle = NSLocalizedString("Weekly Charts", comment: "")
         let viewController = OCKInsightsViewController(insightItems: storeManager.insights, headerTitle: headerTitle, headerSubtitle: "")
-        
+         viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Insert", style: .Plain, target: self, action: #selector(insertActivity))
         // Setup the controller's title and tab bar item
         viewController.title = NSLocalizedString("Insights", comment: "")
         viewController.tabBarItem = UITabBarItem(title: viewController.title, image: UIImage(named:"insights"), selectedImage: UIImage(named: "insights-filled"))
         
         return viewController
     }
+    func refresh() {
+        
+        print("Refresh")
+        //1: Query Patient-Med-Freq for all medications this person is taking
+        //2: For each medication, construct the identifier by creating string Med_id/Freq e.g ibuprofen id =1, Freq 3 -> Identifier: 1/3
+        //3: Check if medication exists with that identifier
+        //4: If it does not, query through Medication table, tell storeManager to run method with given type of medication and pass argument to add new activity
+        
+        //1
+        let userId = NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey)
+        let predicate = NSPredicate(format:"Patient_id == \(userId)", argumentArray: nil)
+        self.appDelegate.PatientMedFreqTable!.readWithPredicate(predicate)
+        {
+            results, errorOrNil in
+            if let error = errorOrNil{
+                fatalError(error.localizedDescription)
+            }
+            else if let results = results
+            {
+                for item in results.items
+                {
+                    let PatMedFreqDict = item as! Dictionary<String,AnyObject>
+                    //2
+                    let identifier = String("\(PatMedFreqDict["Med_id"]!)/\(PatMedFreqDict["Freq"]!)")
+                    
+                    //3
+                    self.storeManager.store.activityForIdentifier(identifier) {
+                        success, activity, errorOrNil in
+                        if let error = errorOrNil {
+                            fatalError(error.localizedDescription)
+                        }
+                        if let _ = activity
+                        {
+                            //Activity already exists, do nothing
+                        }
+                        else
+                        {
+                            //Tell Storemanager to handle new activity
+                            self.storeManager.handleNewMedication(PatMedFreqDict)
+                        }
+                        
+                    }
+                }
+            }
+            
+        }
+        
+        let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
+        dispatch_async(dispatch_get_global_queue(priority, 0)) {
+           
+            
+//            var testString = "haha"
+//            switch self.checkIfActivityExistsWithIdentifier(testString) {
+//            case true:
+//                //Activity already exists, dont do anything
+//                break;
+//            case false:
+//                //Actiivty doesnt exist, we need to add it
+//                print("Activity doesnt exist")
+//                
+//            }
+//            
+            
+            
+            
+            
+            
+            
+            dispatch_async(dispatch_get_main_queue()) {
+                // update some UI
+            }
+        }
+        
+        
     }
+    func checkIfActivityExistsWithIdentifier(identifier:String)  {
+    
+        storeManager.store.activityForIdentifier(identifier) { (success, activityOrNil, errorOrNil) -> Void in
+            guard success else {
+                // perform real error handling here.
+                fatalError("*** An error occurred \(errorOrNil?.localizedDescription) ***")
+            }
+            
+            if let _ = activityOrNil {
+                
+                //Do Nothing
+                
+            } else {
+                
+                //Add activity
+                
+            }
+        }
+        
+    }
+    func insertActivity() {
+     
+        
+//        let newPatMedFreq = ["Patient_id":2,"Med_id":1,"Freq":2]
+//        appDelegate.PatientMedFreqTable!.insert(newPatMedFreq) { (result, error) in
+//            if let err = error {
+//                print("ERROR ", err)
+//            } else if let item = result {
+//                print("Inserted new PatMedFreq")
+//
+//            }
+//        }
+        
+        
+        
+        
+        
+    }
+    
+}
 
 
 
@@ -134,7 +257,9 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
 extension MainViewController: CarePlanStoreManagerDelegate {
     
     /// Called when the `CarePlanStoreManager`'s insights are updated.
-    //TODO: Eventually add ability to incorporate Research Kit charts here
+    
+    
+    //Must Eventually add ability to incorporate Research Kit charts here
     func carePlanStoreManager(manager: CarePlanStoreManager, didUpdateInsights insights: [OCKInsightItem]) {
         // Update the insights view controller with the new insights.
         insightsViewController.items = insights
@@ -208,7 +333,7 @@ extension MainViewController: ORKTaskViewControllerDelegate
         self.completeEvent(event, inStore: self.storeManager.store, withResult: carePlanResult)
     }
     
-    // MARK: Convenience
+// MARK: Convenience
     
     private func completeEvent(event: OCKCarePlanEvent, inStore store: OCKCarePlanStore, withResult result: OCKCarePlanEventResult) {
         store.updateEvent(event, withResult: result, state: .Completed) { success, _, error in
@@ -220,22 +345,54 @@ extension MainViewController: ORKTaskViewControllerDelegate
 //MARK: Background Notification executes every minute while app is open
     func scheduleNotification() {
         UIApplication.sharedApplication().cancelAllLocalNotifications()
+        
+        //SET UP JSON UPDATE NOTIFICATIONS
         let notif:UILocalNotification! = UILocalNotification()
 
         //Set up Daily Fire Schedule
         let calendar = NSCalendar.currentCalendar()
         let components = calendar.components([NSCalendarUnit.Day, NSCalendarUnit.Month,NSCalendarUnit.Year], fromDate: NSDate())
-        components.hour = 11
-        components.minute = 38
+        components.hour = 0
+        components.minute = 0
         components.second = 0
         calendar.timeZone = NSTimeZone.systemTimeZone()
         let dateToFire = calendar.dateFromComponents(components)!
         notif.fireDate = dateToFire
         notif.timeZone = NSTimeZone.systemTimeZone()
-        notif.repeatInterval = NSCalendarUnit.Day
-        
+        notif.repeatInterval = NSCalendarUnit.Minute
+        notif.category = "update"
         UIApplication.sharedApplication().scheduleLocalNotification(notif)
         
+        
+        //Set up Reminders Three times a day
+        for i in 1..<4
+        {
+            let notif2:UILocalNotification! = UILocalNotification()
+            let calendar = NSCalendar.currentCalendar()
+            let components = calendar.components([NSCalendarUnit.Day, NSCalendarUnit.Month,NSCalendarUnit.Year], fromDate: NSDate())
+            
+            switch i {
+            case 1:
+                components.hour = 8
+            case 2:
+                components.hour = 12
+            case 3:
+                components.hour = 20
+            default:
+                break
+            }
+            components.minute = 0
+            components.second = 0
+            calendar.timeZone = NSTimeZone.systemTimeZone()
+            let dateToFire = calendar.dateFromComponents(components)!
+            notif2.fireDate = dateToFire
+            notif2.timeZone = NSTimeZone.systemTimeZone()
+            notif2.repeatInterval = NSCalendarUnit.Day
+            notif2.alertTitle = "Medication alert:"
+            notif2.alertBody = "Don't forget to report!"
+            
+            UIApplication.sharedApplication().scheduleLocalNotification(notif2)
+        }
         
     }
    

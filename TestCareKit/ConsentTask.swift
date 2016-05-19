@@ -13,11 +13,15 @@ public var ConsentTask: ORKOrderedTask {
     
     var steps = [ORKStep]()
     
-    //TODO: Add VisualConsentStep
     let consentDocument = ConsentDocument
     let visualConsentStep = ORKVisualConsentStep(identifier: "VisualConsentStep", document: consentDocument)
     steps += [visualConsentStep]
-    //TODO: Add ConsentReviewStep
+    let ageStep = ORKFormStep(identifier: "dateOfBirthPage", title: "Date of Birth", text: "Enter date of birth")
+    ageStep.optional = false
+    let dateItem = ORKFormItem(identifier: "dateOfBirth", text: "", answerFormat:ORKDateAnswerFormat(style: ORKDateAnswerStyle.Date))
+    ageStep.formItems = [dateItem]
+    steps += [ageStep]
+    
     let signature = consentDocument.signatures!.first! 
     
     let reviewConsentStep = ORKConsentReviewStep(identifier: "ConsentReviewStep", signature: signature, inDocument: consentDocument)

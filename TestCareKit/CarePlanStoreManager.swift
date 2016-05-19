@@ -88,6 +88,11 @@ class CarePlanStoreManager: NSObject {
             
         }
     }
+    func handleNewMedication(PatMedFreqDictionary:Dictionary<String,AnyObject>)
+    {
+        
+    }
+    
 }
 
 
