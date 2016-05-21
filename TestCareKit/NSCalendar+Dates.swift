@@ -29,7 +29,7 @@ extension NSDate {
     func monthDayYearString() -> String
     {
         let dateFormatter = NSDateFormatter()
-        dateFormatter.dateFormat = "MM-dd-YYYY"
+        dateFormatter.dateFormat = "YYYY-MM-dd"
         return dateFormatter.stringFromDate(self)
     }
     func hourMinutesString() -> String

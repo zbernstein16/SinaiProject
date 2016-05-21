@@ -20,25 +20,22 @@ class ConsentViewController: UIViewController {
         appDelegate.PatientMedFreqTable = appDelegate.client!.tableWithName("Patient_Med_Freq")
         appDelegate.medicationTable = appDelegate.client!.tableWithName("Medication")
         
-        let file = "consent.pdf" //this is the file. we will write to and read from it
-        if let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first {
-            let path = NSURL(fileURLWithPath: dir).URLByAppendingPathComponent(file)
-            if NSFileManager.defaultManager().fileExistsAtPath(path.path!)
+        
+            //Check if user has completed survey
+            if NSUserDefaults.standardUserDefaults().boolForKey("surveyCompleted") == true
             {
-                print("Signature already found")
                 self.appDelegate.uploadJSON()
                 self.performSegueWithIdentifier("toMain", sender: nil)
             }
             else
             {
-                print("Signature not found")
                 let taskViewController = ORKTaskViewController(task: ConsentTask, taskRunUUID: nil)
                 taskViewController.delegate = self
                 self.navigationController!.pushViewController(taskViewController, animated: true)
-                
+
             }
-    
-        }
+
+        
         
 
         
@@ -65,48 +62,76 @@ extension ConsentViewController : ORKTaskViewControllerDelegate {
                     let firstName = signature.signature!.givenName!
                     let lastName = signature.signature!.familyName!
             
-        
+            //Make PDF of Contract
+            signature.applyToDocument(copy)
+            copy.makePDFWithCompletionHandler() {
+                PDFData, errorOrNil in
+                if let error = errorOrNil {
+                    print(error.localizedDescription)
+                }
+                else
+                {
+                    
+                    
+                    let file = "consent.pdf" //this is the file. we will write to and read from it
+                    if let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first {
+                        let path = NSURL(fileURLWithPath: dir).URLByAppendingPathComponent(file)
+                        
+                        //writing
+                        do {
+                            try PDFData!.writeToURL(path, options: NSDataWritingOptions.DataWritingAtomic)
+                        }
+                        catch { print("Falied to write signature") }
+                    }
+                    
+                }
+            }
+
+            
+            //Add new patient to Patient Table
+            let alert = UIAlertController(title: nil, message: "Please wait...", preferredStyle: .Alert)
+            
+            
+            //Create Loading
+            alert.view.tintColor = UIColor.blackColor()
+            let loadingIndicator: UIActivityIndicatorView = UIActivityIndicatorView(frame: CGRectMake(10, 5, 50, 50)) as UIActivityIndicatorView
+            loadingIndicator.hidesWhenStopped = true
+            loadingIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray
+            loadingIndicator.startAnimating();
+            alert.view.addSubview(loadingIndicator)
+            presentViewController(alert, animated: true, completion: nil)
+            self.view.userInteractionEnabled = false
+            
             let newPatient:Dictionary<String,AnyObject> = ["First_Name":firstName,"Last_Name":lastName,"Date_Of_Birth":dateString]
-            appDelegate.patientTable!.insert(newPatient) { (result, error) in
-                if let err = error {
-                    print("ERROR ", err)
+            appDelegate.patientTable!.insert(newPatient) { (result, errorOrNil) in
+                if let error = errorOrNil {
+                    
+                    self.view.userInteractionEnabled = true
+                    self.dismissViewControllerAnimated(false, completion: nil)
+                    print("Error",error)
+                    print("ERROR CODE: " + String(error.code))
+                    
+                        if error.domain == NSURLErrorDomain && error.code == NSURLErrorNotConnectedToInternet {
+                            let alert = UIAlertController(title: "Error", message:"Not Connected To Internet", preferredStyle: .Alert)
+                            alert.addAction(UIAlertAction(title: "Okay", style: .Default) { _ in })
+                            self.presentViewController(alert, animated: true){}
+                        }
+            
                 } else if let item = result {
-                    print("Inserted Patient")
+                print("Inserted Patient")
+                    self.view.userInteractionEnabled = true
+                    self.dismissViewControllerAnimated(false, completion: nil)
+                    
                 NSUserDefaults.standardUserDefaults().setInteger(item["id"] as! Int, forKey: Constants.userIdKey)
+                    //ONCE SURVEY COMPLETED, AND USER CREATED, NAVIGATE TO MAIN APP
+                    self.navigationController!.popViewControllerAnimated(false)
+                    self.performSegueWithIdentifier("toMain", sender: nil)
                 }
             }
             
-                    signature.applyToDocument(copy)
             
-                    copy.makePDFWithCompletionHandler() {
-                        PDFData, errorOrNil in
-                        if let error = errorOrNil {
-                            print(error.localizedDescription)
-                        }
-                        else
-                        {
-                            
-                            
-                            let file = "consent.pdf" //this is the file. we will write to and read from it
-                            if let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first {
-                                let path = NSURL(fileURLWithPath: dir).URLByAppendingPathComponent(file)
-                                
-                                //writing
-                                do {
-                                    try PDFData!.writeToURL(path, options: NSDataWritingOptions.DataWritingAtomic)
-                                }
-                                catch { print("Falied to write signature") }
-                            }
-                            
-                        }
-                    }
                     
-                    
-                    //ONCE SURVEY COMPLETED, NAVIGATE TO MAIN APP
             
-                   
-                    self.navigationController!.popViewControllerAnimated(false)
-                    self.performSegueWithIdentifier("toMain", sender: nil)
            
             
 

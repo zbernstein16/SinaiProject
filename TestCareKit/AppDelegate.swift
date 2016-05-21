@@ -41,8 +41,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //UPDATE WILL ONLY FIRE IF USER HAS COMPLETED SURVEY. I.E HAS NAVIGATED TO MAIN VIEW CONTROLLER AND REGISTERD FOR UPDATE NOTIFICATION
             if NSUserDefaults.standardUserDefaults().boolForKey("surveyCompleted") == true
             {
-                print("WILL UPLOAD JSON")
-                
                 //This allows uploads to occur in the background
                 registerBackgroundTask()
                 
@@ -51,109 +49,115 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                
                 
                 let storeManager = CarePlanStoreManager.sharedCarePlanStoreManager
-                let date = NSDate()
-                let dateComponents = date.dateComponents()
+              
+    
                 
-                
-//                //THIS OBJECT WILL EVENTUALLY BE SERIALIZED INTO JSON DATA
-//                var objectForDate:Dictionary<String,AnyObject>! = [String:AnyObject]()
-//                objectForDate["date"] = dateString
-//                
-//                
-//                
-//                //Queries through all events of the current date (of type intervention, i.e the circle activities) and returns an array of them as events
-//                let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
-//                dispatch_async(dispatch_get_global_queue(priority, 0)) {
-//                 
-                    
-                    storeManager.store.eventsOnDate(dateComponents, type: .Intervention) { activities, errorOrNil in
+                    storeManager.store.eventsOnDate(NSDate().dateComponents(), type: .Intervention) { activities, errorOrNil in
                         for activity in activities
                         {
-                            for event in activity
-                            {
-                                let identifier = event.activity.identifier
-                                let components = identifier.componentsSeparatedByString("/")
-                                let medId:Int = Int(components.first!)!
-                                
-                                let date = NSDate.dateFromComponents(event.date).monthDayYearString()
-                                let time = NSDate.dateFromComponents(event.date).hourMinutesString()
-                                
-                                var result:Int
-                                switch event.state.rawValue
+                            
+                            let identifier = activity.first!.activity.identifier
+                            let components = identifier.componentsSeparatedByString("/")
+                            let medId:Int = Int(components.first!)!
+                            let date:String = NSDate.dateFromComponents(activity.first!.date).monthDayYearString()
+                            
+                            
+                          
+                            
+                            //Query to see if post already exists for that day
+                            let medIdPredicate = NSPredicate(format:"Med_id == \(medId)")
+                            let datePredicate = NSPredicate(format:"Date == '\(date)'")
+                            let patPredicate = NSPredicate(format:"Patient_id == \(NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey))")
+                            let compoundPredicate:NSCompoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates:[medIdPredicate,patPredicate,datePredicate])
+                            let query = self.adherenceTable!.queryWithPredicate(compoundPredicate)
+                            
+                            query.readWithCompletion() {
+                                (result, errorOrNil) in
+                                if let error = errorOrNil
                                 {
-                                case 2:
-                                    result = 1
-                                default:
-                                    result = 0
+                                    print("LOCATION 1")
+                                    print("ERROR:",error)
+                                    
                                 }
-                                let newPost:[String:AnyObject] = ["Patient_id":NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey),
-                                               "Med_id":medId,
-                                               "Status":result,
-                                               "Date":date,
-                                               "Time":time
-                                               ]
-                                self.adherenceTable!.insert(newPost)
+                                else
                                 {
-                                     result, errorOrNil in
-                                    if let error = errorOrNil
+                                    var newAdherencePost:[String:AnyObject] = ["Patient_id":NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey),
+                                                                                   "Med_id":medId,
+                                                                                   "Date":date
+                                                                                   ]
+                                    var i:Int! = 1
+                                    for event in activity
                                     {
-                                        print(error.localizedDescription)
+                                        
+                                        let time = NSDate.dateFromComponents(event.date).hourMinutesString()
+                                        
+                                        var result:String!
+                                        switch event.state.rawValue
+                                        {
+                                        case 2:
+                                            result = "Completed"
+                                        default:
+                                            result = "Not-Completed"
+                                        }
+                                       
+                                        let statusString = "Status_" + String(i)
+                                        let timeString = "Time_" + String(i)
+                                        newAdherencePost[statusString] = result
+                                        newAdherencePost[timeString] = time
+                                        
+                                        i = i+1
+                                        
+                                    }
+                                    
+                                   
+                                    if let item = result.items.first
+                                    {
+                                        var newItem = item.mutableCopy() as! Dictionary<String,AnyObject>
+                                        //Update Object
+                                        newItem["Status_1"] = newAdherencePost["Status_1"]
+                                        newItem["Status_2"] = newAdherencePost["Status_2"]
+                                        newItem["Status_3"] = newAdherencePost["Status_3"]
+                                        
+                                        newItem["Time_1"] = newAdherencePost["Time_1"]
+                                        newItem["Time_2"] = newAdherencePost["Time_2"]
+                                        newItem["Time_3"] = newAdherencePost["Time_3"]
+                                        
+                                        self.adherenceTable!.update(newItem)
+                                        {
+                                            (results, error) in
+                                            if let err = error {
+                                                print("LOCATION 2")
+                                                print("ERROR",err)
+                                            }
+                                        }
+                                        
+                                        
+                                        
                                     }
                                     else
                                     {
-                                        print("Posted")
+                                        //Insert new object
+                                        self.adherenceTable!.insert(newAdherencePost)
+                                        {
+                                            (results, err2) in
+                                            if let error = err2
+                                            {
+                                                print("LOCATION 3")
+                                                print("ERROR",error)
+                                            }
+                                        }
+                                        
+
                                     }
-                                    
-                                }
-                               
+                                                                }
                             }
+                            
+    
+                               
+                            
                         }
                     }
-//                    storeManager.store.eventsOnDate(dateComponents, type: .Assessment) { activities, errorOrNil in
-//                        for activity in activities
-//                        {
-//                            for event in activity
-//                            {
-//                                let eventName:String! = event.activity.title + String(event.occurrenceIndexOfDay)
-//                                if let result = event.result
-//                                {
-//                                    objectForDate[eventName] = result.valueString
-//                                }
-//                                else
-//                                {
-//                                    objectForDate[eventName] = "Incomplete"
-//                                }
-//                            }
-//                        }
-//                        
-//                    }
-//                    print(objectForDate)
-//                    var jsonData:NSData?
-//                    do {
-//                        jsonData = try NSJSONSerialization.dataWithJSONObject(objectForDate, options: NSJSONWritingOptions.PrettyPrinted)
-//                    }
-//                    catch {
-//                        fatalError("Failed to serialize JSON")
-//                    }
-//                    print(jsonData!)
-                
-                    
-                    //https://carekitteststorage.blob.core.windows.net/test
-                    
-                    
-                    
-                    //TODO: MUST ADD self.endBackgroundTask() after JSON UPload
-                    
-//                    let newItem = ["text": "my new item", "complete": false]
-//                    self.adherenceTable!.insert(newItem) { (result, error) in
-//                        if let err = error {
-//                            print("ERROR ", err)
-//                        } else if let item = result {
-//                            print("Item added")
-//                        }
-//                        self.endBackgroundTask()
-//                    }
-                
+
 
                     
                     
@@ -171,8 +175,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     
     func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
-        //TODO: REMOVE
-        //uploadJSON()
+        uploadJSON()
     }
     func registerBackgroundTask() {
         backgroundTask = UIApplication.sharedApplication().beginBackgroundTaskWithExpirationHandler {

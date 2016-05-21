@@ -26,6 +26,7 @@ class InsightsBuilder {
      `insights` property.
      */
     func updateInsights(completion: ((Bool, [OCKInsightItem]?) -> Void)?) {
+        print("Update Insights")
         // Cancel any in-progress operations.
         updateOperationQueue.cancelAllOperations()
         
@@ -40,72 +41,92 @@ class InsightsBuilder {
          */
         
     
-        let medicationEventsOperation = QueryActivityEventsOperation(store: carePlanStore,
-                                                                     activityIdentifier: ActivityType.TakeMedication.rawValue,
-                                                                     startDate: queryDateRange.start,
-                                                                     endDate: queryDateRange.end)
+//        let medicationEventsOperation = QueryActivityEventsOperation(store: carePlanStore,
+//                                                                     activityIdentifier: ActivityType.TakeMedication.rawValue,
+//                                                                     startDate: queryDateRange.start,
+//                                                                     endDate: queryDateRange.end)
+        var operationArray:[NSOperation] = [NSOperation]()
+        carePlanStore.activitiesWithCompletion()
+        {
+            success, activities, errorOrNil in
+            if let error = errorOrNil
+            {
+                fatalError(error.localizedDescription)
+            }
+            else {
+                    for activity in activities
+                    {
+                        operationArray.append(QueryActivityEventsOperation(store: self.carePlanStore, activityIdentifier: activity.identifier, startDate: queryDateRange.start, endDate: queryDateRange.end))
+                        print(operationArray)
+                    }
+                
+                    let buildInsightsOperation = BuildInsightsOperation()
+
+                
+                let aggregateDataOperation = NSBlockOperation {
+                    var dailyEvents:[DailyEvents?] = [DailyEvents?]()
+                    for operation in operationArray
+                    {
+                        dailyEvents.append((operation as! QueryActivityEventsOperation).dailyEvents)
+                    }
+                    buildInsightsOperation.drugEvents = dailyEvents
+                }
+                
+                /*
+                 Use the completion block of the `BuildInsightsOperation` to store the
+                 new insights and call the completion block passed to this method.
+                 */
+                buildInsightsOperation.completionBlock = { [unowned buildInsightsOperation] in
+                    let completed = !buildInsightsOperation.cancelled
+                    let newInsights = buildInsightsOperation.insights
+                    // Call the completion block on the main queue.
+                    NSOperationQueue.mainQueue().addOperationWithBlock {
+                        if completed {
+                            completion?(true, newInsights)
+                        }
+                        else {
+                            completion?(false, nil)
+                        }
+                    }
+                }
+                
+                
+                for operation in operationArray
+                {
+                    aggregateDataOperation.addDependency(operation)
+                }
+                // The `BuildInsightsOperation` is dependent on the aggregate operation.
+                buildInsightsOperation.addDependency(aggregateDataOperation)
+                
+                // Add all the operations to the operation queue.
+                var finalOperationArray:[NSOperation] = [NSOperation]()
+                finalOperationArray.appendContentsOf(operationArray)
+                finalOperationArray.appendContentsOf([aggregateDataOperation,buildInsightsOperation])
+                self.updateOperationQueue.addOperations(finalOperationArray, waitUntilFinished: false)
+
+                
+                
+                
+                
+                
+            }
+        }
         
         /*
          Create an operation to query for events for the previous week and
          current weeks' `BackPain` assessment.
          */
-        let backPainEventsOperation = QueryActivityEventsOperation(store: carePlanStore,
-                                                                   activityIdentifier: ActivityType.BackPain.rawValue,
-                                                                   startDate: queryDateRange.start,
-                                                                   endDate: queryDateRange.end)
-        let towerEventsOperation = QueryActivityEventsOperation(store: carePlanStore, activityIdentifier: ActivityType.Tower.rawValue, startDate: queryDateRange.start, endDate: queryDateRange.end)
-        
+    
         /*
          Create a `BuildInsightsOperation` to create insights from the data
          collected by query operations.
          */
-        let buildInsightsOperation = BuildInsightsOperation()
+       
         
         /*
          Create an operation to aggregate the data from query operations into
          the `BuildInsightsOperation`.
          */
-        let aggregateDataOperation = NSBlockOperation {
-            // Copy the queried data from the query operations to the `BuildInsightsOperation`.
-            buildInsightsOperation.medicationEvents = medicationEventsOperation.dailyEvents
-            buildInsightsOperation.backPainEvents = backPainEventsOperation.dailyEvents
-           buildInsightsOperation.towerEvents = towerEventsOperation.dailyEvents
-        }
-        
-        /*
-         Use the completion block of the `BuildInsightsOperation` to store the
-         new insights and call the completion block passed to this method.
-         */
-        buildInsightsOperation.completionBlock = { [unowned buildInsightsOperation] in
-            let completed = !buildInsightsOperation.cancelled
-            let newInsights = buildInsightsOperation.insights
-            // Call the completion block on the main queue.
-            NSOperationQueue.mainQueue().addOperationWithBlock {
-                if completed {
-                    completion?(true, newInsights)
-                }
-                else {
-                    completion?(false, nil)
-                }
-            }
-        }
-        
-        // The aggregate operation is dependent on the query operations.
-        aggregateDataOperation.addDependency(medicationEventsOperation)
-        aggregateDataOperation.addDependency(backPainEventsOperation)
-        aggregateDataOperation.addDependency(towerEventsOperation)
-        
-        // The `BuildInsightsOperation` is dependent on the aggregate operation.
-        buildInsightsOperation.addDependency(aggregateDataOperation)
-        
-        // Add all the operations to the operation queue.
-        updateOperationQueue.addOperations([
-            medicationEventsOperation,
-            backPainEventsOperation,
-            towerEventsOperation,
-            aggregateDataOperation,
-            buildInsightsOperation
-            ], waitUntilFinished: false)
     }
     
     private func calculateQueryDateRange() -> (start: NSDateComponents, end: NSDateComponents) {
@@ -120,6 +141,49 @@ class InsightsBuilder {
         
         return (start: queryRangeStart, end: queryRangeEnd)
     }
+    
+    
+    //MARK: BACKUP
+        //func updateInsights(completion: ((Bool, [OCKInsightItem]?) -> Void)?) {
+        
+        //        let backPainEventsOperation = QueryActivityEventsOperation(store: carePlanStore,
+        //                                                                   activityIdentifier: ActivityType.BackPain.rawValue,
+        //                                                                   startDate: queryDateRange.start,
+        //                                                                   endDate: queryDateRange.end)
+        //        let towerEventsOperation = QueryActivityEventsOperation(store: carePlanStore, activityIdentifier: ActivityType.Tower.rawValue, startDate: queryDateRange.start, endDate: queryDateRange.end)
+        //
+        //let aggregateDataOperation = NSBlockOperation {
+        //            // Copy the queried data from the query operations to the `BuildInsightsOperation`.
+        //            buildInsightsOperation.medicationEvents = medicationEventsOperation.dailyEvents
+        //            buildInsightsOperation.backPainEvents = backPainEventsOperation.dailyEvents
+        //           buildInsightsOperation.towerEvents = towerEventsOperation.dailyEvents
+
+        //                    buildInsightsOperation.completionBlock = { [unowned buildInsightsOperation] in
+        //                        let completed = !buildInsightsOperation.cancelled
+        //                        let newInsights = buildInsightsOperation.insights
+        //                        // Call the completion block on the main queue.
+        //                        NSOperationQueue.mainQueue().addOperationWithBlock {
+        //                            if completed {
+        //                                completion?(true, newInsights)
+        //                            }
+        //                            else {
+        //                                completion?(false, nil)
+        //                            }
+        //                        }
+        //                    }
+        //        aggregateDataOperation.addDependency(medicationEventsOperation)
+        //        aggregateDataOperation.addDependency(backPainEventsOperation)
+        //        aggregateDataOperation.addDependency(towerEventsOperation)
+        //        buildInsightsOperation.addDependency(aggregateDataOperation)
+        //        updateOperationQueue.addOperations([
+        //            medicationEventsOperation,
+        //            backPainEventsOperation,
+        //            towerEventsOperation,
+        //            aggregateDataOperation,
+        //            buildInsightsOperation
+        //            ], waitUntilFinished: false)
+    //}
+    
 }
 
 

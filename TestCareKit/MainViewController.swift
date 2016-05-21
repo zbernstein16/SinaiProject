@@ -61,7 +61,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         self.viewControllers = [
             UINavigationController(rootViewController: careCardViewController),
             UINavigationController(rootViewController: symptomTrackerViewController),
-            UINavigationController(rootViewController: insightsViewController),UINavigationController(rootViewController: docViewController)
+            UINavigationController(rootViewController: insightsViewController)
         ]
         
         storeManager.delegate = self
@@ -91,7 +91,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         self.viewControllers = [
             UINavigationController(rootViewController: careCardViewController),
             UINavigationController(rootViewController: symptomTrackerViewController),
-            UINavigationController(rootViewController: insightsViewController),UINavigationController(rootViewController: docViewController)
+            UINavigationController(rootViewController: insightsViewController)
         ]
         
         self.scheduleNotification()
@@ -164,9 +164,13 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         {
             results, errorOrNil in
             if let error = errorOrNil{
-                let alert = UIAlertController(title: "Error", message:"Failed to Refresh", preferredStyle: .Alert)
-                alert.addAction(UIAlertAction(title: "Okay", style: .Default) { _ in })
-                self.presentViewController(alert, animated: true){}
+                
+                if error.domain == NSURLErrorDomain && error.code == NSURLErrorNotConnectedToInternet {
+                    let alert = UIAlertController(title: "Error", message:"Not Connected To Internet", preferredStyle: .Alert)
+                    alert.addAction(UIAlertAction(title: "Okay", style: .Default) { _ in })
+                    self.presentViewController(alert, animated: true){}
+                }
+            
             }
             else if let results = results
             {
@@ -201,7 +205,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
         dispatch_async(dispatch_get_global_queue(priority, 0)) {
     
-            
+            self.appDelegate.uploadJSON()
             
             dispatch_async(dispatch_get_main_queue()) {
                 // update some UI
@@ -230,7 +234,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
                 self.appDelegate.PatientMedFreqTable!.insert(newPatMedFreq) { (result, error) in
                     if let err = error {
                         print("ERROR ", err)
-                    } else if let item = result {
+                    } else if let _ = result {
                         print("Inserted new PatMedFreq")
                         
                     }

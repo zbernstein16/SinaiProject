@@ -38,6 +38,7 @@ class BuildInsightsOperation: NSOperation {
     var medicationEvents: DailyEvents?
     var backPainEvents: DailyEvents?
     var towerEvents: DailyEvents?
+    var drugEvents:[DailyEvents?]?
     
     private(set) var insights:[OCKInsightItem] = []
     
@@ -67,7 +68,17 @@ class BuildInsightsOperation: NSOperation {
         if let insight = createBackSurveyInsight() {
             newInsights.append(insight)
         }
-        // Store any new insights thate were created.
+        if let insightsArray = createDrugInsights()
+        {
+            for insight in insightsArray
+            {
+                guard let insight = insight else { break }
+                print("Append insight")
+                newInsights.append(insight)
+                
+            }
+        }
+         // Store any new insights thate were created.
         if !newInsights.isEmpty {
             insights = newInsights
         }
@@ -108,7 +119,56 @@ class BuildInsightsOperation: NSOperation {
     }
     
     // MARK: Convenience
-    
+    func createDrugInsights () -> [OCKInsightItem?]?
+    {
+       var insightsArray:[OCKInsightItem?] = [OCKInsightItem?]()
+        guard let drugEventsArray = drugEvents else  { return nil }
+        for events0 in drugEventsArray where drugEventsArray.count > 0
+        {
+            
+                    guard let events = events0 else { return nil }
+            
+                    let calendar = NSCalendar.currentCalendar()
+                    let now = NSDate()
+                    
+                    let components = NSDateComponents()
+                    components.day = -7
+                    
+                    let startDate = now.dateByAddingTimeInterval(-7*24*60*60)
+                    
+                    var totalEventCount = 0
+                    var completedEventCount = 0
+                    
+                    for offset in 0..<7 {
+                        components.day = offset
+                        let dayDate = calendar.dateByAddingComponents(components, toDate: startDate, options: [])!
+                        let dayComponents = NSDateComponents(date: dayDate, calendar: calendar)
+                        let eventsForDay = events[dayComponents]
+                        totalEventCount += eventsForDay.count
+                        
+                        for event in eventsForDay {
+                            if event.state == .Completed {
+                                completedEventCount += 1
+                                
+                            }
+                        }
+                    }
+                    guard totalEventCount > 0 else { return nil }
+                    // Calculate the percentage of completed events.
+                    let drugAdherence = Float(completedEventCount) / Float(totalEventCount)
+                    
+                    // Create an `OCKMessageItem` describing medical adherence.
+                    let percentageFormatter = NSNumberFormatter()
+                    percentageFormatter.numberStyle = .PercentStyle
+                    let formattedAdherence = percentageFormatter.stringFromNumber(drugAdherence)!
+                    let title = events.allEvents.first!.activity.title
+                    insightsArray.append(OCKMessageItem(title: "\(title) Adherence", text: "Your \(title) adherence was \(formattedAdherence) last week.", tintColor: UIColor.redColor(), messageType: .Tip))
+            
+                    print("Insights Array")
+                    print(insightsArray)
+        }
+        return insightsArray
+    }
     func createMedicationAdherenceInsight() -> OCKInsightItem? {
         // Make sure there are events to parse.
         guard let medicationEvents = medicationEvents else { return nil }

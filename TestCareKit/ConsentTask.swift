@@ -18,7 +18,9 @@ public var ConsentTask: ORKOrderedTask {
     steps += [visualConsentStep]
     let ageStep = ORKFormStep(identifier: "dateOfBirthPage", title: "Date of Birth", text: "Enter date of birth")
     ageStep.optional = false
-    let dateItem = ORKFormItem(identifier: "dateOfBirth", text: "", answerFormat:ORKDateAnswerFormat(style: ORKDateAnswerStyle.Date))
+    
+    let dateItem = ORKFormItem(identifier: "dateOfBirth", text: "Born:", answerFormat:ORKDateAnswerFormat(style: ORKDateAnswerStyle.Date))
+    dateItem.placeholder = "MM/DD/YYYY"
     ageStep.formItems = [dateItem]
     steps += [ageStep]
     
