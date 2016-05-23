@@ -13,6 +13,10 @@
 		A2D9CBCE1943C2540017F096 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2D9CBCD1943C2540017F096 /* Images.xcassets */; };
 		A31A89F71BF3FDFA00C7B656 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A31A89F61BF3FDFA00C7B656 /* Launch Screen.storyboard */; };
 		CE0197F51CEA531D0080FB98 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE0197F41CEA531D0080FB98 /* WebKit.framework */; };
+		CE0242561CF38C81008145C6 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0242551CF38C81008145C6 /* Constants.swift */; };
+		CE052B801CF33D290041D88F /* ChartDataSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE052B7F1CF33D290041D88F /* ChartDataSources.swift */; };
+		CE052B861CF34D8E0041D88F /* ChartViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE052B851CF34D8E0041D88F /* ChartViewController.swift */; };
+		CE052B881CF363340041D88F /* PainScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE052B871CF363340041D88F /* PainScale.swift */; };
 		CE06D5A61CE6235B00BB233D /* ConsentTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06D5A51CE6235B00BB233D /* ConsentTask.swift */; };
 		CE0E60E31CEE0D1300846EFC /* WindowsAzureMobileServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE0E60E21CEE0D1300846EFC /* WindowsAzureMobileServices.framework */; };
 		CE0E60E51CEE32CE00846EFC /* Drug.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0E60E41CEE32CE00846EFC /* Drug.swift */; };
@@ -24,8 +28,6 @@
 		CEFF461D1CE306E900C7CCEB /* BuildInsightsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF460C1CE306E900C7CCEB /* BuildInsightsOperation.swift */; };
 		CEFF461E1CE306E900C7CCEB /* CarePlanStoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF460D1CE306E900C7CCEB /* CarePlanStoreManager.swift */; };
 		CEFF461F1CE306E900C7CCEB /* ChoiceSurvey.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF460E1CE306E900C7CCEB /* ChoiceSurvey.swift */; };
-		CEFF46201CE306E900C7CCEB /* DashboardTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF460F1CE306E900C7CCEB /* DashboardTableViewController.swift */; };
-		CEFF46211CE306E900C7CCEB /* DiscreteGraphDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF46101CE306E900C7CCEB /* DiscreteGraphDataSource.swift */; };
 		CEFF46221CE306E900C7CCEB /* docViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF46111CE306E900C7CCEB /* docViewController.swift */; };
 		CEFF46231CE306E900C7CCEB /* InsightsBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF46121CE306E900C7CCEB /* InsightsBuilder.swift */; };
 		CEFF46241CE306E900C7CCEB /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFF46131CE306E900C7CCEB /* MainViewController.swift */; };
@@ -114,6 +116,10 @@
 		A31A89F61BF3FDFA00C7B656 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		A3BBD77C1C05181600DD0DB0 /* MicrosoftAzureMobile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MicrosoftAzureMobile.framework; sourceTree = "<group>"; };
 		CE0197F41CEA531D0080FB98 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		CE0242551CF38C81008145C6 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Constants.swift; path = ../Constants.swift; sourceTree = "<group>"; };
+		CE052B7F1CF33D290041D88F /* ChartDataSources.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChartDataSources.swift; sourceTree = "<group>"; };
+		CE052B851CF34D8E0041D88F /* ChartViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChartViewController.swift; sourceTree = "<group>"; };
+		CE052B871CF363340041D88F /* PainScale.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PainScale.swift; sourceTree = "<group>"; };
 		CE06D5A51CE6235B00BB233D /* ConsentTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsentTask.swift; sourceTree = "<group>"; };
 		CE0E60E21CEE0D1300846EFC /* WindowsAzureMobileServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WindowsAzureMobileServices.framework; sourceTree = "<group>"; };
 		CE0E60E41CEE32CE00846EFC /* Drug.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Drug.swift; sourceTree = "<group>"; };
@@ -125,8 +131,6 @@
 		CEFF460C1CE306E900C7CCEB /* BuildInsightsOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BuildInsightsOperation.swift; sourceTree = "<group>"; };
 		CEFF460D1CE306E900C7CCEB /* CarePlanStoreManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarePlanStoreManager.swift; sourceTree = "<group>"; };
 		CEFF460E1CE306E900C7CCEB /* ChoiceSurvey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChoiceSurvey.swift; sourceTree = "<group>"; };
-		CEFF460F1CE306E900C7CCEB /* DashboardTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DashboardTableViewController.swift; sourceTree = "<group>"; };
-		CEFF46101CE306E900C7CCEB /* DiscreteGraphDataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiscreteGraphDataSource.swift; sourceTree = "<group>"; };
 		CEFF46111CE306E900C7CCEB /* docViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = docViewController.swift; sourceTree = "<group>"; };
 		CEFF46121CE306E900C7CCEB /* InsightsBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InsightsBuilder.swift; sourceTree = "<group>"; };
 		CEFF46131CE306E900C7CCEB /* MainViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
@@ -181,6 +185,7 @@
 			isa = PBXGroup;
 			children = (
 				A2D9CBC31943C2540017F096 /* AppDelegate.swift */,
+				CE0242551CF38C81008145C6 /* Constants.swift */,
 				CEA71BDD1CE6C59800A4BAEF /* Consent */,
 				CEFF464D1CE309AB00C7CCEB /* View Controllers */,
 				CEFF464C1CE3093F00C7CCEB /* Insights */,
@@ -215,10 +220,19 @@
 			path = ..;
 			sourceTree = "<group>";
 		};
+		CE052B7A1CF33C960041D88F /* Charts  */ = {
+			isa = PBXGroup;
+			children = (
+				CE052B7F1CF33D290041D88F /* ChartDataSources.swift */,
+			);
+			name = "Charts ";
+			sourceTree = "<group>";
+		};
 		CE0E60E61CEE32E400846EFC /* Activity Types */ = {
 			isa = PBXGroup;
 			children = (
 				CE0E60E41CEE32CE00846EFC /* Drug.swift */,
+				CE052B871CF363340041D88F /* PainScale.swift */,
 			);
 			name = "Activity Types";
 			sourceTree = "<group>";
@@ -280,7 +294,6 @@
 			children = (
 				CEFF460C1CE306E900C7CCEB /* BuildInsightsOperation.swift */,
 				CEFF46121CE306E900C7CCEB /* InsightsBuilder.swift */,
-				CEFF460F1CE306E900C7CCEB /* DashboardTableViewController.swift */,
 				CEFF46481CE308C000C7CCEB /* QueryActivityEventsOperation.swift */,
 				CEFF46161CE306E900C7CCEB /* OCKInsightItem+EmptyMessage.swift */,
 				CEFF46151CE306E900C7CCEB /* NSCalendar+Dates.swift */,
@@ -293,8 +306,9 @@
 			children = (
 				CEA71BD71CE6C59800A4BAEF /* ConsentViewController.swift */,
 				CEFF46111CE306E900C7CCEB /* docViewController.swift */,
-				CEFF46101CE306E900C7CCEB /* DiscreteGraphDataSource.swift */,
 				CEFF46131CE306E900C7CCEB /* MainViewController.swift */,
+				CE052B851CF34D8E0041D88F /* ChartViewController.swift */,
+				CE052B7A1CF33C960041D88F /* Charts  */,
 			);
 			name = "View Controllers";
 			sourceTree = "<group>";
@@ -441,23 +455,25 @@
 				CEA71BD81CE6C59800A4BAEF /* ConsentViewController.swift in Sources */,
 				CEFF461A1CE306E900C7CCEB /* Activity.swift in Sources */,
 				CEFF46291CE306E900C7CCEB /* TakeMedication.swift in Sources */,
+				CE052B801CF33D290041D88F /* ChartDataSources.swift in Sources */,
 				CEFF461D1CE306E900C7CCEB /* BuildInsightsOperation.swift in Sources */,
+				CE052B861CF34D8E0041D88F /* ChartViewController.swift in Sources */,
 				CEFF462A1CE306E900C7CCEB /* Tower.swift in Sources */,
+				CE0242561CF38C81008145C6 /* Constants.swift in Sources */,
 				CEFF461F1CE306E900C7CCEB /* ChoiceSurvey.swift in Sources */,
 				CEFF461C1CE306E900C7CCEB /* BackPain.swift in Sources */,
 				CEFF461E1CE306E900C7CCEB /* CarePlanStoreManager.swift in Sources */,
 				A2BD20971AC8A731007F7181 /* QSTodoDataModel.xcdatamodeld in Sources */,
-				CEFF46201CE306E900C7CCEB /* DashboardTableViewController.swift in Sources */,
 				CEFF46231CE306E900C7CCEB /* InsightsBuilder.swift in Sources */,
 				CEFF46271CE306E900C7CCEB /* OCKInsightItem+EmptyMessage.swift in Sources */,
 				CEA71BDF1CE6C59800A4BAEF /* ConsentDocument.swift in Sources */,
 				CEFF46241CE306E900C7CCEB /* MainViewController.swift in Sources */,
+				CE052B881CF363340041D88F /* PainScale.swift in Sources */,
 				CEFF46281CE306E900C7CCEB /* SampleData.swift in Sources */,
 				CEFF46251CE306E900C7CCEB /* NameSurvey.swift in Sources */,
 				CE06D5A61CE6235B00BB233D /* ConsentTask.swift in Sources */,
 				CEFF46261CE306E900C7CCEB /* NSCalendar+Dates.swift in Sources */,
 				CEFF46491CE308C000C7CCEB /* QueryActivityEventsOperation.swift in Sources */,
-				CEFF46211CE306E900C7CCEB /* DiscreteGraphDataSource.swift in Sources */,
 				CEFF461B1CE306E900C7CCEB /* Assessment.swift in Sources */,
 				CEFF46221CE306E900C7CCEB /* docViewController.swift in Sources */,
 				A2D9CBC41943C2540017F096 /* AppDelegate.swift in Sources */,

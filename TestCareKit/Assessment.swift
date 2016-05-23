@@ -4,12 +4,18 @@
 //
 //  Created by Zachary Bernstein on 5/4/16.
 //  Copyright © 2016 Zachary Bernstein. All rights reserved.
-//  Copyright (c) 2016, Apple Inc. All rights reserved.
+
 
 import CareKit
 import ResearchKit
-
-protocol Assessment: Activity {
+class Assessment:Activity, AssessmentProtocol
+{
+    func task() -> ORKTask
+    {
+        fatalError("This method must be overridden")
+    }
+}
+protocol AssessmentProtocol: ActivityProtocol {
     func task() -> ORKTask
 }
 

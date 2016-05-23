@@ -26,7 +26,7 @@ class InsightsBuilder {
      `insights` property.
      */
     func updateInsights(completion: ((Bool, [OCKInsightItem]?) -> Void)?) {
-        print("Update Insights")
+        
         // Cancel any in-progress operations.
         updateOperationQueue.cancelAllOperations()
         
@@ -56,8 +56,14 @@ class InsightsBuilder {
             else {
                     for activity in activities
                     {
+                        //TODO: Need to change this to handle ALL types of events
+                        
+                        
+                        if activity.groupIdentifier! == ActivityType.Drug.rawValue
+                        {
                         operationArray.append(QueryActivityEventsOperation(store: self.carePlanStore, activityIdentifier: activity.identifier, startDate: queryDateRange.start, endDate: queryDateRange.end))
-                        print(operationArray)
+                       
+                        }
                     }
                 
                     let buildInsightsOperation = BuildInsightsOperation()

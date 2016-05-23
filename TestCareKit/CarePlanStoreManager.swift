@@ -1,32 +1,5 @@
-/*
- Copyright (c) 2016, Apple Inc. All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without modification,
- are permitted provided that the following conditions are met:
- 
- 1.  Redistributions of source code must retain the above copyright notice, this
- list of conditions and the following disclaimer.
- 
- 2.  Redistributions in binary form must reproduce the above copyright notice,
- this list of conditions and the following disclaimer in the documentation and/or
- other materials provided with the distribution.
- 
- 3.  Neither the name of the copyright holder(s) nor the names of any contributors
- may be used to endorse or promote products derived from this software without
- specific prior written permission. No license is granted to the trademarks of
- the copyright holders even if such marks are included in this software.
- 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+////  Copyright © 2016 Zachary Bernstein. All rights reserved.
+
 
 import CareKit
 
@@ -48,11 +21,33 @@ class CarePlanStoreManager: NSObject {
         return insightsBuilder.insights
     }
     
+    //TODO: NEED TO ARCHIVE THIS ARRAY
+    
+    var activities:[Activity]?
+    
     // MARK: Initialization
     
     private override init() {
+        
+        
+        
+        //WARNING:
+        //TODO:
+        //NEED TO ADD HERE THAT WHENEVER APP STARTS UP, WE ADD ALL THE Activity Objects to this class' array
+        // Start to build the initial array of insights.
+        
+        if let _ = NSKeyedUnarchiver.unarchiveObjectWithFile(Constants.archivePath) as? [Activity]
+        {
+            activities = NSKeyedUnarchiver.unarchiveObjectWithFile(Constants.archivePath) as? [Activity]
+        }
+        else
+        {
+            activities = [Activity]()
+        }
+        print("Location 1")
+        print(activities)
+        
         // Determine the file URL for the store.
-
         let searchPaths = NSSearchPathForDirectoriesInDomains(.ApplicationSupportDirectory, .UserDomainMask, true)
         let applicationSupportPath = searchPaths[0]
         let persistenceDirectoryURL = NSURL(fileURLWithPath: applicationSupportPath)
@@ -75,12 +70,17 @@ class CarePlanStoreManager: NSObject {
         // Register this object as the store's delegate to be notified of changes.
         store.delegate = self
         
-        // Start to build the initial array of insights.
+       
+        
         updateInsights()
     }
     
     
     func updateInsights() {
+        
+        print("Location 2")
+        print(NSKeyedUnarchiver.unarchiveObjectWithFile(Constants.archivePath) as? [Activity])
+        
         insightsBuilder.updateInsights { [weak self] completed, newInsights in
             // If new insights have been created, notifiy the delegate, which is main view controller
             guard let storeManager = self, newInsights = newInsights where completed else { return }
@@ -91,6 +91,8 @@ class CarePlanStoreManager: NSObject {
     }
     func handleNewMedication(PatMedFreqDictionary:Dictionary<String,AnyObject>)
     {
+        
+
         let medId:Int = PatMedFreqDictionary["Med_id"] as! Int
         let freq:Int = PatMedFreqDictionary["Freq"] as! Int
         let startDate:NSDate = PatMedFreqDictionary["Start_Date"] as! NSDate
@@ -108,35 +110,57 @@ class CarePlanStoreManager: NSObject {
             }
             else if let results = results
             {
-                for medication in results.items
+                for activity in results.items
                 {
-                    let name:String = medication["Name"] as! String
-                    let type:String = medication["Type"] as! String
+                    let name:String = activity["Name"] as! String
+                    let type:String = activity["Type"] as! String
                     //TODO: Add more types here 
                     switch type {
                         case "Drug":
                            let drug = Drug(withName: name, start: startDate, occurences: freq, medId:medId)
                            self.store.addActivity(drug.carePlanActivity()) {
-                            success, error in
-                            if !success {
-                                
+                                                success, errorOrNil in
+                                                if let error = errorOrNil
+                                                {
+                                                    fatalError(error.localizedDescription)
+                                                }
+                                                else
+                                                {
+                                                    
+                                                    self.activities!.append(drug)
+                                                    NSKeyedArchiver.archiveRootObject(self.activities!, toFile:Constants.archivePath)
+                                                }
                             }
-                            else
-                            {
-                                
+                        case "PainScale":
+                            let painScale = PainScale(withTypeOfPain: name, start: startDate, occurences: freq, medId: medId)
+                            self.store.addActivity(painScale.carePlanActivity()) {
+                                            success, error in
+                                            if let error = errorOrNil
+                                            {
+                                                fatalError(error.localizedDescription)
+                                            }
+                                            else
+                                            {
+                                                self.activities!.append(painScale)
+                                                NSKeyedArchiver.archiveRootObject(self.activities!, toFile:Constants.archivePath)
+                                            }
                             }
-                        }
-                        case "Paint":
-                            print("Found Pain")
                         default:
                             break
                     }
-                }
+                    }
+                
             }
         }
         
     }
-    
+    func activityWithType(type: ActivityType) -> Activity? {
+        for activity in activities! where activity.activityType == type {
+           return activity
+        }
+        
+        return nil
+    }
     
 }
 

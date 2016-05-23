@@ -3,8 +3,7 @@
 //  TestCareKit
 //
 //  Created by Zachary Bernstein on 5/13/16.
-//  Copyright © 2016 Microsoft. All rights reserved.
-//
+//  Copyright © 2016 Zachary Bernstein. All rights reserved.
 
 import ResearchKit
 

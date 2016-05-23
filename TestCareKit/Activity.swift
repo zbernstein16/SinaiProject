@@ -7,11 +7,25 @@
 //  Copyright (c) 2016, Apple Inc. All rights reserved.
 
 import CareKit
-
-//Protocol Defines what is necesssary for activities to have
-protocol Activity {
+class Activity:NSObject, ActivityProtocol
+{
+    override init()
+    {
+        self.activityType = .Blank
+        super.init()
+    }
+    var activityType:ActivityType
     
-    var activityType:ActivityType { get }
+    
+    func carePlanActivity() -> OCKCarePlanActivity
+    {
+        fatalError("This method must be overridden")
+    }
+}
+//Protocol Defines what is necesssary for activities to have
+protocol ActivityProtocol {
+    
+    var activityType:ActivityType { get set }
     func carePlanActivity() -> OCKCarePlanActivity
     
 }
@@ -19,6 +33,11 @@ protocol Activity {
 
 
 enum ActivityType:String {
+    
+    case Drug
+    case PainScale
+    case Blank
+    
     
     case HamstringStretch
     case TakeMedication
@@ -28,4 +47,5 @@ enum ActivityType:String {
     case Mood
     case BloodGlucose
     case Tower
+    
 }

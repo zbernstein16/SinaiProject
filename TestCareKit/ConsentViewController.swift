@@ -3,8 +3,7 @@
 //  TestCareKit
 //
 //  Created by Zachary Bernstein on 5/13/16.
-//  Copyright © 2016 Microsoft. All rights reserved.
-//
+//  Copyright © 2016 Zachary Bernstein. All rights reserved.
 
 import UIKit
 import ResearchKit
@@ -24,7 +23,7 @@ class ConsentViewController: UIViewController {
             //Check if user has completed survey
             if NSUserDefaults.standardUserDefaults().boolForKey("surveyCompleted") == true
             {
-                self.appDelegate.uploadJSON()
+                self.appDelegate.uploadInformation()
                 self.performSegueWithIdentifier("toMain", sender: nil)
             }
             else
@@ -51,7 +50,7 @@ extension ConsentViewController : ORKTaskViewControllerDelegate {
             //IF SURVEY WAS COMPLETED
             //Save document to PDF
             
-            print("Result of Date of birth")
+
             let dob = taskViewController.result.stepResultForStepIdentifier("dateOfBirthPage")!.firstResult! as! ORKDateQuestionResult
             let dateString = dob.dateAnswer!.monthDayYearString()
             
@@ -72,10 +71,13 @@ extension ConsentViewController : ORKTaskViewControllerDelegate {
                 else
                 {
                     
+                  
+                    
                     
                     let file = "consent.pdf" //this is the file. we will write to and read from it
                     if let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first {
                         let path = NSURL(fileURLWithPath: dir).URLByAppendingPathComponent(file)
+                        
                         
                         //writing
                         do {
@@ -118,7 +120,6 @@ extension ConsentViewController : ORKTaskViewControllerDelegate {
                         }
             
                 } else if let item = result {
-                print("Inserted Patient")
                     self.view.userInteractionEnabled = true
                     self.dismissViewControllerAnimated(false, completion: nil)
                     

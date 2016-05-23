@@ -4,7 +4,6 @@
 //
 //  Created by Zachary Bernstein on 5/2/16.
 //  Copyright © 2016 Zachary Bernstein. All rights reserved.
-//
 
 import UIKit
 import CareKit
@@ -20,7 +19,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
     var symptomTrackerViewController: OCKSymptomTrackerViewController!
     var insightsViewController: OCKInsightsViewController!
     var docViewController: DocViewController!
-    var chartViewController:DashboardTableViewController!
+    var chartViewController:ChartViewController!
     var surveyVC: ORKTaskViewController!
     
     let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
@@ -43,26 +42,8 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         
         super.init(coder: aDecoder)
         
-        careCardViewController = createCareCardViewController()
-        symptomTrackerViewController = createSymptomTrackerViewController()
-        insightsViewController = createInsightsViewController()
         
-        docViewController = DocViewController()
-        docViewController.title = "HTML"
-        
-        chartViewController = DashboardTableViewController()
-        chartViewController.title = "CHART"
-         //Add contact
-        //connectViewController = createConnectViewController()
-        
-        
-        
-        
-        self.viewControllers = [
-            UINavigationController(rootViewController: careCardViewController),
-            UINavigationController(rootViewController: symptomTrackerViewController),
-            UINavigationController(rootViewController: insightsViewController)
-        ]
+        self.setViewControllers()
         
         storeManager.delegate = self
     }
@@ -83,19 +64,39 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         }
         
         
+        self.setViewControllers()
+        
+        self.scheduleNotification()
+        super.viewDidLoad()
+
+    }
+    func setViewControllers() {
+        
         careCardViewController = createCareCardViewController()
-        careCardViewController.store
         symptomTrackerViewController = createSymptomTrackerViewController()
         insightsViewController = createInsightsViewController()
+        
+        //docViewController = DocViewController()
+        //docViewController.title = "HTML"
+        
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        chartViewController = storyboard.instantiateViewControllerWithIdentifier("test") as! ChartViewController
+     
+   
+        chartViewController.title = "CHART"
+        //Add contact
+        //connectViewController = createConnectViewController()
+        
+        
+        
         
         self.viewControllers = [
             UINavigationController(rootViewController: careCardViewController),
             UINavigationController(rootViewController: symptomTrackerViewController),
-            UINavigationController(rootViewController: insightsViewController)
-        ]
+            UINavigationController(rootViewController: insightsViewController),UINavigationController(rootViewController: chartViewController)]
         
-        self.scheduleNotification()
-        super.viewDidLoad()
+
 
     }
     override func didReceiveMemoryWarning() {
@@ -205,7 +206,7 @@ class MainViewController: UITabBarController, OCKCarePlanStoreDelegate {
         let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
         dispatch_async(dispatch_get_global_queue(priority, 0)) {
     
-            self.appDelegate.uploadJSON()
+            self.appDelegate.uploadInformation()
             
             dispatch_async(dispatch_get_main_queue()) {
                 // update some UI
@@ -301,13 +302,14 @@ extension MainViewController: OCKSymptomTrackerViewControllerDelegate
     func symptomTrackerViewController(viewController: OCKSymptomTrackerViewController, didSelectRowWithAssessmentEvent assessmentEvent: OCKCarePlanEvent) {
         
         // Lookup the assessment the row represents.
-        guard let activityType = ActivityType(rawValue: assessmentEvent.activity.identifier) else { return }
-        guard let sampleAssessment = sampleData.activityWithType(activityType) as? Assessment else { return }
-        
+        print("Location 1")
+        guard let activityType = ActivityType(rawValue: assessmentEvent.activity.groupIdentifier!) else { return }
+        guard let sampleAssessment = storeManager.activityWithType(activityType) as? Assessment else { return }
         /*
          Check if we should show a task for the selected assessment event
          based on its state.
          */
+        print("location 3")
         guard assessmentEvent.state == .Initial ||
             assessmentEvent.state == .NotCompleted ||
             (assessmentEvent.state == .Completed && assessmentEvent.activity.resultResettable) else { return }
@@ -332,8 +334,8 @@ extension MainViewController: ORKTaskViewControllerDelegate
         
         // Determine the event that was completed and the `SampleAssessment` it represents.
         guard let event = symptomTrackerViewController.lastSelectedAssessmentEvent,
-            activityType = ActivityType(rawValue: event.activity.identifier),
-            sampleAssessment = sampleData.activityWithType(activityType) as? Assessment else { return }
+            activityType = ActivityType(rawValue: event.activity.groupIdentifier!),
+            sampleAssessment = storeManager.activityWithType(activityType) as? Assessment else { return }
         
         // Build an `OCKCarePlanEventResult` that can be saved into the `OCKCarePlanStore`.
         let carePlanResult = sampleAssessment.buildResultForCarePlanEvent(event, taskResult: taskViewController.result)

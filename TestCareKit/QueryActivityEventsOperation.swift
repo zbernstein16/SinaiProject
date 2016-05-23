@@ -1,3 +1,6 @@
+////  Copyright © 2016 Zachary Bernstein. All rights reserved.
+
+
 import CareKit
 
 class QueryActivityEventsOperation: NSOperation {

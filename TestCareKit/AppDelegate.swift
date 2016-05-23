@@ -34,129 +34,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 //MARK: Azure Methods
     
-    //Every time user opens app for first time, or app enters background, or whenever background fetch occurs, this will query through all the health data for the past few days and generate a JSON file and upload it.
-    func uploadJSON() {
+    //Every time user opens app for first time, or app enters background, or whenever background fetch occurs, this will query through all the health data for the past few days and upload to Azure through MSClient API
+    func uploadInformation() {
         
         
         //UPDATE WILL ONLY FIRE IF USER HAS COMPLETED SURVEY. I.E HAS NAVIGATED TO MAIN VIEW CONTROLLER AND REGISTERD FOR UPDATE NOTIFICATION
             if NSUserDefaults.standardUserDefaults().boolForKey("surveyCompleted") == true
             {
                 //This allows uploads to occur in the background
-                registerBackgroundTask()
+               
                 
                 
              
                
                 
-                let storeManager = CarePlanStoreManager.sharedCarePlanStoreManager
-              
+                    self.uploadAssessmentData()
+                    self.uploadInterventionData()
     
-                
-                    storeManager.store.eventsOnDate(NSDate().dateComponents(), type: .Intervention) { activities, errorOrNil in
-                        for activity in activities
-                        {
-                            
-                            let identifier = activity.first!.activity.identifier
-                            let components = identifier.componentsSeparatedByString("/")
-                            let medId:Int = Int(components.first!)!
-                            let date:String = NSDate.dateFromComponents(activity.first!.date).monthDayYearString()
-                            
-                            
-                          
-                            
-                            //Query to see if post already exists for that day
-                            let medIdPredicate = NSPredicate(format:"Med_id == \(medId)")
-                            let datePredicate = NSPredicate(format:"Date == '\(date)'")
-                            let patPredicate = NSPredicate(format:"Patient_id == \(NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey))")
-                            let compoundPredicate:NSCompoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates:[medIdPredicate,patPredicate,datePredicate])
-                            let query = self.adherenceTable!.queryWithPredicate(compoundPredicate)
-                            
-                            query.readWithCompletion() {
-                                (result, errorOrNil) in
-                                if let error = errorOrNil
-                                {
-                                    print("LOCATION 1")
-                                    print("ERROR:",error)
-                                    
-                                }
-                                else
-                                {
-                                    var newAdherencePost:[String:AnyObject] = ["Patient_id":NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey),
-                                                                                   "Med_id":medId,
-                                                                                   "Date":date
-                                                                                   ]
-                                    var i:Int! = 1
-                                    for event in activity
-                                    {
-                                        
-                                        let time = NSDate.dateFromComponents(event.date).hourMinutesString()
-                                        
-                                        var result:String!
-                                        switch event.state.rawValue
-                                        {
-                                        case 2:
-                                            result = "Completed"
-                                        default:
-                                            result = "Not-Completed"
-                                        }
-                                       
-                                        let statusString = "Status_" + String(i)
-                                        let timeString = "Time_" + String(i)
-                                        newAdherencePost[statusString] = result
-                                        newAdherencePost[timeString] = time
-                                        
-                                        i = i+1
-                                        
-                                    }
-                                    
-                                   
-                                    if let item = result.items.first
-                                    {
-                                        var newItem = item.mutableCopy() as! Dictionary<String,AnyObject>
-                                        //Update Object
-                                        newItem["Status_1"] = newAdherencePost["Status_1"]
-                                        newItem["Status_2"] = newAdherencePost["Status_2"]
-                                        newItem["Status_3"] = newAdherencePost["Status_3"]
-                                        
-                                        newItem["Time_1"] = newAdherencePost["Time_1"]
-                                        newItem["Time_2"] = newAdherencePost["Time_2"]
-                                        newItem["Time_3"] = newAdherencePost["Time_3"]
-                                        
-                                        self.adherenceTable!.update(newItem)
-                                        {
-                                            (results, error) in
-                                            if let err = error {
-                                                print("LOCATION 2")
-                                                print("ERROR",err)
-                                            }
-                                        }
-                                        
-                                        
-                                        
-                                    }
-                                    else
-                                    {
-                                        //Insert new object
-                                        self.adherenceTable!.insert(newAdherencePost)
-                                        {
-                                            (results, err2) in
-                                            if let error = err2
-                                            {
-                                                print("LOCATION 3")
-                                                print("ERROR",error)
-                                            }
-                                        }
-                                        
 
-                                    }
-                                                                }
-                            }
-                            
-    
-                               
-                            
-                        }
-                    }
+                
 
 
                     
@@ -172,10 +68,267 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         
-    
-    
+    func testUpload()
+    {
+//        let storeManager = CarePlanStoreManager.sharedCarePlanStoreManager
+//        storeManager.store.activitiesWithCompletion()
+//            {
+//                success, activities, errorOrNil in
+//                if let error = errorOrNil
+//                {
+//                    print("FAILED TO UPLOAD")
+//                }
+//                for activity in activities
+//                {
+//                    storeManager.store.eventsForActivity(<#T##activity: OCKCarePlanActivity##OCKCarePlanActivity#>, date: <#T##NSDateComponents#>, completion: <#T##([OCKCarePlanEvent], NSError?) -> Void#>)
+//                }
+//        }
+    }
+    func uploadInterventionData()
+    {
+        registerBackgroundTask()
+        let storeManager = CarePlanStoreManager.sharedCarePlanStoreManager
+        storeManager.store.eventsOnDate(NSDate().dateComponents(), type: .Intervention) { activities, errorOrNil in
+            for activity in activities
+            {
+            
+            let identifier = activity.first!.activity.identifier
+            let components = identifier.componentsSeparatedByString("/")
+            let medId:Int = Int(components.first!)!
+            let date:String = NSDate.dateFromComponents(activity.first!.date).monthDayYearString()
+            
+            
+            
+            
+            //Query to see if post already exists for that day
+            let medIdPredicate = NSPredicate(format:"Med_id == \(medId)")
+            let datePredicate = NSPredicate(format:"Date == '\(date)'")
+            let patPredicate = NSPredicate(format:"Patient_id == \(NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey))")
+            let compoundPredicate:NSCompoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates:[medIdPredicate,patPredicate,datePredicate])
+            let query = self.adherenceTable!.queryWithPredicate(compoundPredicate)
+            
+            query.readWithCompletion() {
+                (result, errorOrNil) in
+                if let error = errorOrNil
+                {
+                    print("LOCATION 1")
+                    print("ERROR:",error)
+                    
+                }
+                else
+                {
+                    var newAdherencePost:[String:AnyObject] = ["Patient_id":NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey),
+                        "Med_id":medId,
+                        "Date":date
+                    ]
+                    var i:Int! = 1
+                    for event in activity
+                    {
+                        
+                        let time = NSDate.dateFromComponents(event.date).hourMinutesString()
+                        
+                        var result:String!
+                        switch event.state.rawValue
+                        {
+                        case 2:
+                            result = "Completed"
+                        default:
+                            result = "Not-Completed"
+                        }
+                        
+                        let statusString = "Status_" + String(i)
+                        let timeString = "Time_" + String(i)
+                        newAdherencePost[statusString] = result
+                        newAdherencePost[timeString] = time
+                        
+                        i = i+1
+                        
+                    }
+                    
+                    
+                    if let item = result.items.first
+                    {
+                        var newItem = item.mutableCopy() as! Dictionary<String,AnyObject>
+                        //Update Object
+                        newItem["Status_1"] = newAdherencePost["Status_1"]
+                        newItem["Status_2"] = newAdherencePost["Status_2"]
+                        newItem["Status_3"] = newAdherencePost["Status_3"]
+                        
+                        newItem["Time_1"] = newAdherencePost["Time_1"]
+                        newItem["Time_2"] = newAdherencePost["Time_2"]
+                        newItem["Time_3"] = newAdherencePost["Time_3"]
+                        
+                        self.adherenceTable!.update(newItem)
+                        {
+                            (results, error) in
+                            if let err = error {
+                                print("LOCATION 2")
+                                print("ERROR",err)
+                            }
+                            else
+                            {
+                                self.endBackgroundTask()
+                            }
+                        }
+                        
+                        
+                        
+                    }
+                    else
+                    {
+                        //Insert new object
+                        self.adherenceTable!.insert(newAdherencePost)
+                        {
+                            (results, err2) in
+                            if let error = err2
+                            {
+                                print("LOCATION 3")
+                                print("ERROR",error)
+                            }
+                            else
+                            {
+                                self.endBackgroundTask()
+                                
+                            }
+                        }
+                        
+                        
+                    }
+                }
+            }
+            
+            
+            
+            //End For Loop
+        }
+            
+        }
+    }
+    func uploadAssessmentData()
+    {
+        registerBackgroundTask()
+        let storeManager = CarePlanStoreManager.sharedCarePlanStoreManager
+        storeManager.store.eventsOnDate(NSDate().dateComponents(), type:.Assessment) { activities, errorOrNil in
+            for activity in activities
+            {
+                
+                let identifier = activity.first!.activity.identifier
+                let components = identifier.componentsSeparatedByString("/")
+                let medId:Int = Int(components.first!)!
+                let date:String = NSDate.dateFromComponents(activity.first!.date).monthDayYearString()
+                
+                
+                
+                
+                //Query to see if post already exists for that day
+                let medIdPredicate = NSPredicate(format:"Med_id == \(medId)")
+                let datePredicate = NSPredicate(format:"Date == '\(date)'")
+                let patPredicate = NSPredicate(format:"Patient_id == \(NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey))")
+                let compoundPredicate:NSCompoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates:[medIdPredicate,patPredicate,datePredicate])
+                let query = self.adherenceTable!.queryWithPredicate(compoundPredicate)
+                
+                query.readWithCompletion() {
+                    (result, errorOrNil) in
+                    if let error = errorOrNil
+                    {
+                        print("LOCATION 1")
+                        print("ERROR:",error)
+                        
+                    }
+                    else
+                    {
+                        var newAdherencePost:[String:AnyObject] = ["Patient_id":NSUserDefaults.standardUserDefaults().integerForKey(Constants.userIdKey),
+                            "Med_id":medId,
+                            "Date":date
+                        ]
+                        var i:Int! = 1
+                        for event in activity
+                        {
+                            
+                            let time = NSDate.dateFromComponents(event.date).hourMinutesString()
+                            
+                            var result:String?
+                            if let eventResult = event.result {
+                                result = eventResult.valueString
+                            }
+                            else
+                            {
+                                result = "Not-Completed"
+                            }
+                            
+                            
+                            
+                            let statusString = "Status_" + String(i)
+                            let timeString = "Time_" + String(i)
+                            newAdherencePost[statusString] = result
+                            newAdherencePost[timeString] = time
+                            
+                            i = i+1
+                            
+                        }
+                        
+                        
+                        if let item = result.items.first
+                        {
+                            var newItem = item.mutableCopy() as! Dictionary<String,AnyObject>
+                            //Update Object
+                            newItem["Status_1"] = newAdherencePost["Status_1"]
+                            newItem["Status_2"] = newAdherencePost["Status_2"]
+                            newItem["Status_3"] = newAdherencePost["Status_3"]
+                            
+                            newItem["Time_1"] = newAdherencePost["Time_1"]
+                            newItem["Time_2"] = newAdherencePost["Time_2"]
+                            newItem["Time_3"] = newAdherencePost["Time_3"]
+                            
+                            self.adherenceTable!.update(newItem)
+                            {
+                                (results, error) in
+                                if let err = error {
+                                    print("LOCATION 2")
+                                    print("ERROR",err)
+                                }
+                                else
+                                {
+                                    self.endBackgroundTask()
+                                }
+                            }
+                            
+                            
+                            
+                        }
+                        else
+                        {
+                            //Insert new object
+                            self.adherenceTable!.insert(newAdherencePost)
+                            {
+                                (results, err2) in
+                                if let error = err2
+                                {
+                                    print("LOCATION 3")
+                                    print("ERROR",error)
+                                }
+                                else
+                                {
+                                    self.endBackgroundTask()
+                                    
+                                }
+                            }
+                            
+                            
+                        }
+                    }
+                }
+                
+                
+                
+                //End For Loop
+            }
+            
+        }
+    }
+
     func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
-        uploadJSON()
+        uploadInformation()
     }
     func registerBackgroundTask() {
         backgroundTask = UIApplication.sharedApplication().beginBackgroundTaskWithExpirationHandler {
@@ -186,7 +339,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func endBackgroundTask() {
-        NSLog("Background task ended.")
         UIApplication.sharedApplication().endBackgroundTask(backgroundTask)
         backgroundTask = UIBackgroundTaskInvalid
     }
@@ -194,9 +346,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //MARK: Normal Methods
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject : AnyObject]?) -> Bool {
 
+        client = MSClient(applicationURLString:"https://zachservice.azure-mobile.net/")
+        adherenceTable = client!.tableWithName("Adherence")
+        patientTable = client!.tableWithName("Patient")
+        PatientMedFreqTable = client!.tableWithName("Patient_Med_Freq")
+        medicationTable = client!.tableWithName("Medication")
         
         
-                
         //Updates store in background every 12 hours
         let twelveHourInterval:NSTimeInterval! = 12 * 60 * 60
         UIApplication.sharedApplication().setMinimumBackgroundFetchInterval(twelveHourInterval)
@@ -210,7 +366,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes:[.Alert, .Badge, .Sound], categories: nil))  // types are UIUserNotificationType members
         
         
-        //self.uploadJSON()
+        uploadInformation()
         
         
     
@@ -230,7 +386,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-        uploadJSON()
+        uploadInformation()
     }
 
     func applicationWillEnterForeground(application: UIApplication) {
@@ -303,8 +459,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return managedObjectContext
     }()
 }
-struct Constants
-{
-    static var userIdKey = "idKey"
-}
+
 

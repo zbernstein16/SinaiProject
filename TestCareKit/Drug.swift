@@ -8,33 +8,51 @@
 
 import CareKit
 import ResearchKit
-class Drug: Activity {
+class Drug:Activity, NSCoding {
     
-    
-    let activityType: ActivityType = .TakeMedication
+
     var drugName: String!
     var startDate:NSDateComponents!
     var freq:Int!
     var id:Int!
     init(withName name:String,start:NSDate,occurences:Int, medId:Int)
     {
+        super.init()
+        self.activityType = ActivityType.Drug
         self.drugName = name
         self.startDate = start.dateComponents()
         self.freq = occurences
         self.id = medId
     }
-    func carePlanActivity() -> OCKCarePlanActivity {
+    override func carePlanActivity() -> OCKCarePlanActivity {
         print("Frequency")
         print(freq)
         
         
         let schedule = OCKCareSchedule.dailyScheduleWithStartDate(startDate, occurrencesPerDay:UInt(freq))
         let identifier = String("\(id)/\(freq)")
-        return OCKCarePlanActivity.interventionWithIdentifier(identifier, groupIdentifier: "", title: drugName, text: nil, tintColor: UIColor.redColor(), instructions: "Take \(freq) time(s) a day", imageURL: nil, schedule: schedule, userInfo: nil)
-
+        return OCKCarePlanActivity.interventionWithIdentifier(identifier, groupIdentifier:ActivityType.Drug.rawValue, title: drugName, text: nil, tintColor: UIColor.redColor(), instructions: "Take \(freq) time(s) a day", imageURL: nil, schedule: schedule, userInfo: nil)
+    }
+    
+    
+    // MARK: NSCoding
+    
+    required convenience init?(coder decoder: NSCoder) {
+        guard let drugName = decoder.decodeObjectForKey("drugName") as? String,
+            let freq = decoder.decodeObjectForKey("freq") as? Int,
+            let startDate = decoder.decodeObjectForKey("startDate") as? NSDateComponents,
+            let id = decoder.decodeObjectForKey("id") as? Int else { return nil }
         
-       
-        
+        self.init(withName: drugName, start: NSDate.dateFromComponents(startDate), occurences: freq, medId: id)
         
     }
+    
+    func encodeWithCoder(coder: NSCoder) {
+        coder.encodeObject(self.drugName, forKey: "drugName")
+        coder.encodeObject(self.freq, forKey: "freq")
+        coder.encodeObject(self.startDate, forKey: "startDate")
+        coder.encodeObject(self.id, forKey: "id")
+    }
+
+
 }

@@ -73,7 +73,6 @@ class BuildInsightsOperation: NSOperation {
             for insight in insightsArray
             {
                 guard let insight = insight else { break }
-                print("Append insight")
                 newInsights.append(insight)
                 
             }
@@ -164,8 +163,7 @@ class BuildInsightsOperation: NSOperation {
                     let title = events.allEvents.first!.activity.title
                     insightsArray.append(OCKMessageItem(title: "\(title) Adherence", text: "Your \(title) adherence was \(formattedAdherence) last week.", tintColor: UIColor.redColor(), messageType: .Tip))
             
-                    print("Insights Array")
-                    print(insightsArray)
+            
         }
         return insightsArray
     }
